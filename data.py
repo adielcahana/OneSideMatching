@@ -1,3 +1,4 @@
+
 class Student:
     def __init__(self, id):
         self._id = id
@@ -27,10 +28,13 @@ class Student:
 
 class Hospitals:
     def __init__(self):
+        self._index = dict()
         self._seats = dict()
 
     def __setitem__(self, key, value):
+        self._index[key] = len(self._seats)
         self._seats[key] = value
 
+    # return tuple of seats and index mapping
     def __getitem__(self, item):
-        return self._seats[item]
+        return self._seats[item], self._index
