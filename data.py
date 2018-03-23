@@ -1,3 +1,5 @@
+import pandas as pd
+import xlrd
 
 class Student:
     def __init__(self, id):
@@ -38,3 +40,10 @@ class Hospitals:
     # return tuple of seats and index mapping
     def __getitem__(self, item):
         return self._seats[item], self._index
+
+    # read data from excel file (hospital list)
+    # "D:\\Users\\Admin\\OneSideMatching\\res\\hospital_list_test.xlsx"
+    def from_excel(self, path):
+        hospital_list = pd.read_excel(path)
+        hospital_list = hospital_list.as_matrix()
+        return hospital_list

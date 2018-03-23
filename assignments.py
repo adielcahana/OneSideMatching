@@ -1,6 +1,5 @@
 import numpy as np
-import pandas as pd
-import xlrd
+
 
 
 def hat(students, hospitals):
@@ -22,12 +21,3 @@ def expected_hat(students, hospitals, iterate_num):
             # get the second parameter of the tuple(the index of the hospital was assign to current student)
             hospital_index = hospitals[students[i].assignment][1]
             probs[j][hospital_index] += 1
-
-
-# test
-def get_hospital_list():
-    hospital_list = pd.read_excel("D:\\Users\\Admin\\OneSideMatching\\res\\hospital_list_test.xlsx")
-    hospital_list = hospital_list.as_matrix().flatten()
-    return
-
-get_hospital_list()
