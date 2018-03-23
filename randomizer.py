@@ -51,9 +51,9 @@ class LyingStudent(Student):
         self._student._assignment = hospital
 
 def create_random_students(size, hospitals):
-    students = []
+    students = list()
     for i in range(size):
-        students[i] = RandomStudent(i, hospitals)
+        students.append(RandomStudent(i, hospitals))
     return students
 
 def create_random_lying_students(size, hospitals, num_of_lying , lying_precentage):

@@ -34,16 +34,37 @@ class Hospitals:
         self._seats = dict()
 
     def __setitem__(self, key, value):
-        self._index[key] = len(self._seats)
+        if key not in self._seats:
+            self._index[key] = len(self._seats)
         self._seats[key] = value
 
     # return tuple of seats and index mapping
     def __getitem__(self, item):
-        return self._seats[item], self._index
+        return self._seats[item], self._index[item]
+
+    def __iter__(self):
+        return iter(self._seats)
+
+    def __len__(self):
+        return len(self._seats)
 
     # read data from excel file (hospital list)
-    # "D:\\Users\\Admin\\OneSideMatching\\res\\hospital_list_test.xlsx"
-    def from_excel(self, path):
+    @staticmethod
+    def from_excel(path):
         hospital_list = pd.read_excel(path)
         hospital_list = hospital_list.as_matrix()
-        return hospital_list
+        hospitals = Hospitals()
+        for hospital in hospital_list:
+            hospitals[hospital[0]] = hospital[1]
+        return hospitals
+
+    @staticmethod
+    def copy(hospitals):
+        new_hospitals = Hospitals()
+        for key, value in hospitals:
+            new_hospitals[key] = value
+        return new_hospitals
+
+    @property
+    def names(self):
+        return list(self._seats.keys())
