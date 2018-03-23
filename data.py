@@ -2,15 +2,26 @@ class Student:
     def __init__(self, id):
         self._id = id
         self._priorities = []
-        self._assignment =''
+        self._assignment = ''
 
-    def get_priorities(self):
+    @property
+    def id(self):
+        return id
+
+    @property
+    def priorities(self):
         return self._priorities
 
-    def set_priorities(self, priorities):
+    @priorities.setter
+    def priorities(self, priorities):
         self._priorities = priorities
 
-    def assign(self, hospital):
+    @property
+    def assignment(self):
+        return self._assignment
+
+    @assignment.setter
+    def assignment(self, hospital):
         self._assignment = hospital
 
 
