@@ -1,5 +1,5 @@
 import pandas as pd
-import xlrd
+
 
 class Student:
     def __init__(self, id):
@@ -30,20 +30,16 @@ class Student:
 
 class Hospitals:
     def __init__(self):
-        self._index = dict()
         self._seats = dict()
 
     def __setitem__(self, key, value):
-        if key not in self._seats:
-            self._index[key] = len(self._seats)
         self._seats[key] = value
 
-    # return tuple of seats and index mapping
     def __getitem__(self, item):
-        return self._seats[item], self._index[item]
+        return self._seats[item]
 
     def __iter__(self):
-        return iter(self._seats)
+        return iter(self._seats.items())
 
     def __len__(self):
         return len(self._seats)
@@ -51,8 +47,7 @@ class Hospitals:
     # read data from excel file (hospital list)
     @staticmethod
     def from_excel(path):
-        hospital_list = pd.read_excel(path)
-        hospital_list = hospital_list.as_matrix()
+        hospital_list = pd.read_excel(path).as_matrix()
         hospitals = Hospitals()
         for hospital in hospital_list:
             hospitals[hospital[0]] = hospital[1]
