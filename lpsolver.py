@@ -23,7 +23,7 @@ def solve(probs, hospitals_order, students):
     problem += lpSum(P[(i, j)] * coeff[i][j] for i in range(shape[0]) for j in range(shape[1]))
 
     print("before: " + str(np.sum(happiness)))
-    problem.solve(solver=)
+    problem.solve()
     print(LpStatus[problem.status])
 
     if problem.status == LpStatusOptimal:
@@ -33,7 +33,6 @@ def solve(probs, hospitals_order, students):
             for j in range(shape[1]):
                 new_probs[i][j] = P[(i, j)].varValue
         return new_probs
-
 
 
 def get_happiness_coeff(hospitals_order, students):

@@ -11,7 +11,7 @@ np.random.seed(1)
 hospitals = Hospitals.from_excel("res/hospital_list_test.xlsx")
 students = randomizer.create_random_students(500, hospitals.names)
 start = time.time()
-probs, order = assignments.expected_hat(students, hospitals, 100)
+probs, order = assignments.expected_hat(students, hospitals, 100000)
 solution = solve(probs, order, students)
 
 print(time.time() - start)
