@@ -5,7 +5,7 @@ import numpy as np
 import assignments
 import randomizer
 from data import Hospitals
-from lpsolver import solve, normalize_new_probs, birkhoff_algo, lottery
+from lpsolver import solve
 
 
 def timeit(func, *args):
@@ -14,7 +14,6 @@ def timeit(func, *args):
     print(func.__name__ + " time is: " + str(time.time() - start) + " sec")
     return ret
 
-print(time.time() - start)
 
 def double_equality(a, b, epsilon):
     return abs(a - b) <= epsilon
@@ -38,17 +37,23 @@ def sainity_test():
             if not double_equality(rows_sum[i], 1.0, epsilon):
                 print('error in ' + var_name + ' rows sum')
                 break
-    # test
+
+    # test probs
     column_test(probs, 'probs')
-    column_test(solution, 'solution')
     rows_test(probs, 'probs')
+    #test solution
+    column_test(solution, 'solution')
     rows_test(solution, 'solution')
+    # test birkhoff matrix
+    # column_test(new_probs, 'birkhoff')
+    rows_test(new_probs, 'birkhoff')
 
 
 def time_test():
-    global probs, solution
+    global probs, solution, new_probs
     probs = timeit(assignments.expected_hat, students, hospitals, order, 100)
     solution = timeit(solve, probs, order, students)
+    new_probs = timeit(assignments.birkhoff_normalize, solution, hospitals)
 
 
 if __name__ == "__main__":
@@ -56,16 +61,10 @@ if __name__ == "__main__":
     hospitals = Hospitals.from_excel("res/hospital_list_test.xlsx")
     students = randomizer.create_random_students(500, hospitals.names)
     order = assignments.get_hospitals_order(hospitals)
-    d = normalize_new_probs(solution, hospitals._seats, hospitals.names, order)
-    birkhoff_list = birkhoff_algo(d)
-    choice = lottery(birkhoff_list)
-    print("\n\nwe choose: \n", birkhoff_list[choice[0]][1])
-    # assigner = Assginer(students, hospitals)
-    # order = assigner.get_order()
-
 
     probs = None
     solution = None
+    new_probs = None
 
     time_test()
     sainity_test()
