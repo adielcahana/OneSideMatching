@@ -1,9 +1,11 @@
+from birkhoff import birkhoff_von_neumann_decomposition
 import numpy as np
 from pulp import *
 
 before = 0
 after = 0
 status = None
+
 
 
 def solve(probs, hospitals_order, students):
@@ -43,8 +45,8 @@ def solve(probs, hospitals_order, students):
 def get_happiness_coeff(hospitals_order, students):
     coeff = np.zeros((len(students), len(hospitals_order)))
     i = 0
+    m = len(hospitals_order)
     for student in students:
-        m = len(hospitals_order)
         j = 0
         for priority in student.priorities:
             coeff[i][hospitals_order[priority]] = (m - j)**2
@@ -53,4 +55,36 @@ def get_happiness_coeff(hospitals_order, students):
     return coeff
 
 
+#################### new ##################
+def normalize_new_probs(probs_matrix, hospital_seats, hospital_names, order):
+    # initialize
+    c = probs_matrix[:, 0]
+    c = c/hospital_seats[hospital_names[0]]
+    result = (np.ones((hospital_seats[hospital_names[0]], 1))*c).transpose()
+    # duplicate the columns, probs_matrix.shape()[0] = the number of columns
+    column_size = probs_matrix.shape[1]
+    for i in range(1, column_size):
+        c = probs_matrix[:, i]
+        c = c/hospital_seats[hospital_names[i]]
+        duplicate_column = (np.ones((hospital_seats[hospital_names[i]], 1))*c).transpose()
+        result = np.column_stack((result, duplicate_column))
+    print(result)
+    return result
 
+
+def birkhoff_algo(d):
+    print("\n\n\n\n")
+    res = birkhoff_von_neumann_decomposition(d)
+    for coefficient, permutation_matrix in res:
+        print('coefficient:', coefficient)
+        print('permutation matrix:\n', permutation_matrix)
+    return res
+
+
+def lottery(res):
+    p = []
+    size = len(res)
+    for i in range(0, size):
+        p.append(res[i][0])
+    choice = np.random.choice(size, 1, p)
+    return choice

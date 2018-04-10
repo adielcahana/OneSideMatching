@@ -5,7 +5,7 @@ import numpy as np
 import assignments
 import randomizer
 from data import Hospitals
-from lpsolver import solve
+from lpsolver import solve, normalize_new_probs, birkhoff_algo, lottery
 
 
 def timeit(func, *args):
@@ -14,6 +14,7 @@ def timeit(func, *args):
     print(func.__name__ + " time is: " + str(time.time() - start) + " sec")
     return ret
 
+print(time.time() - start)
 
 def double_equality(a, b, epsilon):
     return abs(a - b) <= epsilon
@@ -55,6 +56,10 @@ if __name__ == "__main__":
     hospitals = Hospitals.from_excel("res/hospital_list_test.xlsx")
     students = randomizer.create_random_students(500, hospitals.names)
     order = assignments.get_hospitals_order(hospitals)
+    d = normalize_new_probs(solution, hospitals._seats, hospitals.names, order)
+    birkhoff_list = birkhoff_algo(d)
+    choice = lottery(birkhoff_list)
+    print("\n\nwe choose: \n", birkhoff_list[choice[0]][1])
     # assigner = Assginer(students, hospitals)
     # order = assigner.get_order()
 
