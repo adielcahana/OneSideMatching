@@ -3,31 +3,33 @@ import numpy as np
 from data import Hospitals
 
 
-def hat(students, hospitals):
-    np.random.shuffle(students)
-    for student in students:
-        for choice in student.priorities:
-            if hospitals[choice] > 0:
-                student.assignment = choice
-                hospitals[choice] -= 1
-                break
-
-
-def expected_hat(students, hospitals, iterate_num):
-    hospitals_order = dict()
+def get_hospitals_order(hospitals):
+    order = dict()
     i = 0
     for name in hospitals.names:
-        hospitals_order[name] = i
+        order[name] = i
         i += 1
-    probs = np.zeros((len(students), len(hospitals)))
-    shuffled_students = np.copy(students)
+    return order
 
+
+def hat(students, hospitals, order):
+    indexes = np.arange(len(students), dtype=np.int16)
+    np.random.shuffle(indexes)
+    seats = Hospitals.copy(hospitals)
+    assignments = np.zeros((len(students), len(hospitals)), dtype=np.float64)
+
+    for i in range(len(students)):
+        for choice in students[indexes[i]].priorities:
+            if seats[choice] > 0:
+                assignments[indexes[i]][order[choice]] = 1.0
+                seats[choice] -= 1
+                break
+
+    return assignments
+
+
+def expected_hat(students, hospitals, order, iterate_num):
+    probs = np.zeros((len(students), len(hospitals)), dtype=np.float64)
     for i in range(iterate_num):
-        seats = Hospitals.copy(hospitals)
-        hat(shuffled_students, seats)
-        for j in range(len(students)):
-            hospital_index = hospitals_order[students[j].assignment]
-            probs[j][hospital_index] += 1
-
-    probs /= iterate_num
-    return probs, hospitals_order
+        probs += hat(students, hospitals, order)
+    return probs / iterate_num

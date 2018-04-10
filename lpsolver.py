@@ -1,8 +1,13 @@
 import numpy as np
 from pulp import *
 
+before = 0
+after = 0
+status = None
+
 
 def solve(probs, hospitals_order, students):
+    global before, after, status
     shape = probs.shape
     P = LpVariable.dicts(name='P', indexs=((i, j) for i in range(shape[0]) for j in range(shape[1])),
                           lowBound=0.0, upBound=1.0, cat='Continuous')
@@ -17,17 +22,17 @@ def solve(probs, hospitals_order, students):
     # happiness constraint
     coeff = get_happiness_coeff(hospitals_order, students)
     happiness = [np.dot(probs[i], coeff[i]) for i in range(shape[0])]
+    before = np.sum(happiness)
     for row in range(shape[0]):
         problem += lpSum(P[(row, j)] * coeff[row][j] for j in range(shape[1])) >= happiness[row]
     # objective function
     problem += lpSum(P[(i, j)] * coeff[i][j] for i in range(shape[0]) for j in range(shape[1]))
 
-    print("before: " + str(np.sum(happiness)))
     problem.solve()
-    print(LpStatus[problem.status])
 
     if problem.status == LpStatusOptimal:
-        print("after: " + str(pulp.value(problem.objective)))
+        status = LpStatus[problem.status]
+        after = pulp.value(problem.objective)
         new_probs = np.zeros((len(students), len(hospitals_order)))
         for i in range(shape[0]):
             for j in range(shape[1]):
