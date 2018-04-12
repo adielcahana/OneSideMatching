@@ -2,9 +2,12 @@ import pandas as pd
 
 
 class Student:
-    def __init__(self, id):
+    def __init__(self, id, priorities=None):
         self._id = id
-        self._priorities = []
+        if priorities is None:
+            self._priorities = []
+        else:
+            self._priorities = priorities
         self._assignment = ''
 
     @property
