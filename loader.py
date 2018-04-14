@@ -1,26 +1,43 @@
+import numpy as np
 import pandas as pd
-from data import Student
-import pandas as pd
 
 from data import Student
 
 
-def get_student(row):
-    for j in range(1, len(hospital_codes) + 1):
-        code = int(data.iloc[i]['Real_' + str(j)])
-        if code is None:
-            raise ValueError
-        real_priorities.append(hospital_codes[code])
-        code = int(data.iloc[i]['Reported_' + str(j)])
-        if code is None:
-            students_real.append(Student(i, real_priorities))
-            raise ValueError
-        reported_priorities.append(hospital_codes[code])
+class StatisticsStudent(Student):
+    def __init__(self, id, reported_priorities, real_priorities):
+        Student.__init__(self, id, reported_priorities)
+        self._real_priorities = real_priorities
+
+    @property
+    def real_priorities(self):
+        return self._real_priorities
+
+    @real_priorities.setter
+    def real_priorities(self, real_priorities):
+        self._real_priorities = real_priorities
+
+    @property
+    def reported_priorities(self):
+        return self._priorities
+
+    @reported_priorities.setter
+    def reported_priorities(self, priorities):
+        self._priorities = priorities
+
+
+def get_student(id, row, codes):
+    reported = get_priorites(row, 'reported', codes)
+    real = get_priorites(row, 'real', codes)
+    if real is None and reported is None:
+        return None
+    return StatisticsStudent(id, reported, real)
+
 
 def get_priorites(row, type, codes):
     if type == 'real':
         col_name = 'Real_'
-    else:
+    else:  # type == 'reported'
         col_name = 'Reported_'
         priorities = parse_reported_raw(row)
         if priorities is not None:
@@ -28,18 +45,21 @@ def get_priorites(row, type, codes):
 
     priorities = []
     for i in range(1, len(codes) + 1):
-        code = int(row[col_name + str(j)])
-        if code == np.nan:
+        code = row[col_name + str(i)]
+        if code is np.nan:
             return None
-        priorities.append(hospital_codes[code])
+        priorities.append(hospital_codes[int(code)])
     return priorities
 
-def parse_reported_raw(row, codes):
+
+def parse_reported_raw(row):
     priorities = []
     hospital = str()
     last_word = False
-    for element in str(row["Reported Raw"]).split():
-        if element[-1] == '.':
+    if type(row["Reported Raw"]) is float:
+        return None
+    for element in row["Reported Raw"].split():
+        if element[-1] == ".":
             last_word = False
             if len(hospital) > 0:
                 priorities.append(hospital)
@@ -50,42 +70,35 @@ def parse_reported_raw(row, codes):
             else:
                 hospital = element
                 last_word = True
-    print(priorities)
+    priorities.append(hospital)
+    return priorities
 
 
-hospital_codes = {}
+if __name__ == "__main__":
+    hospital_codes = {}
+    with open("res/hospitals codes.txt", encoding='utf8') as f:
+        for line in f:
+            val, key = line.split(",")
+            hospital_codes[int(key)] = val
 
-with open("res/hospitals codes.txt", encoding='utf8') as f:
-    for line in f:
-        val, key = line.split(",")
-        hospital_codes[int(key)] = val
+    data = pd.read_csv("res//Internship Lottery_April 8, 2018_11.54.csv")
+    students = []
+    for i in range(2, 241):
+        student = get_student(i + 2, data.iloc[i], hospital_codes)
+        if student is not None:
+            students.append(student)
 
-data = pd.read_csv("res//Internship Lottery_April 8, 2018_11.54.csv")
-parse_reported_raw(data.iloc[10], hospital_codes)
+    real = 0
+    reported = 0
+    overlap = 0
+    for student in students:
+        if student.reported_priorities is not None:
+            reported += 1
+        if student.real_priorities is not None:
+            real += 1
+        if student.reported_priorities is not None and student.real_priorities is not None:
+            overlap += 1
 
-# students_real = []
-# students_reported = []
-# overlap = 0
-# for i in range(4, 241):
-#     real_priorities = []
-#     reported_priorities = []
-#     try:
-#         for j in range(1, len(hospital_codes) + 1):
-#             code = int(data.iloc[i]['Real_' + str(j)])
-#             if code is None:
-#                 raise ValueError
-#             real_priorities.append(hospital_codes[code])
-#             code = int(data.iloc[i]['Reported_' + str(j)])
-#             if code is None:
-#                 students_real.append(Student(i, real_priorities))
-#                 raise ValueError
-#             reported_priorities.append(hospital_codes[code])
-#         overlap += 1
-#         students_real.append(Student(i, real_priorities))
-#         students_reported.append(Student(i, reported_priorities))
-#     except ValueError:
-#         continue
-#
-# print("real len: {}".format(len(students_real)))
-# print("reported len: {}".format(len(students_reported)))
-# print("overlap is: {}".format(overlap))
+    print("real len: {}".format(real))
+    print("reported len: {}".format(reported))
+    print("overlap is: {}".format(overlap))
