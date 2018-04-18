@@ -1,0 +1,5 @@
+gender = {1 : 'male', 2 : 'female'}
+University = {1 : 'Tel-Aviv', 2 : 'Ben-Gurion', 3 : 'Tecnihon', 4 : 'Hebrew', 5 : 'Tzfat'}
+Course = {1 : '6 years, 2 : '4 years', 3 : 'Phd'}
+pair = {1 : 'yes', 2 : 'no'}
+manipulate = {1 : 'yes', 2 : 'no'}
