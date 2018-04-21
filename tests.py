@@ -54,6 +54,8 @@ def time_test():
     probs = timeit(assignments.expected_hat, students, hospitals, order, 100)
     solution = timeit(solve, probs, order, students)
     new_probs = timeit(assignments.birkhoff_normalize, solution, hospitals)
+    coefficients, permutations = timeit(assignments.birkhoff_decoposition, new_probs)
+    print(permutations)
 
 
 if __name__ == "__main__":

@@ -1,13 +1,28 @@
 import numpy as np
+import math
 import pandas as pd
 
 from data import Student
 
 
 class StatisticsStudent(Student):
-    def __init__(self, id, reported_priorities, real_priorities):
-        Student.__init__(self, id, reported_priorities)
-        self._real_priorities = real_priorities
+
+    def __init__(self, id):
+        Student.__init__(self, id)
+        self._reported = None
+        self._real_priorities = None
+        self._age = None
+        self._gender = None
+        self._university = None
+        self._course = None
+        self._city = None
+        self._pair = None
+        self._result = None
+        self._manipulate = None
+        self._all_reasons = None
+        self._exchange = None
+        self._is_hat_better = None
+        self._understanding = None
 
     @property
     def real_priorities(self):
@@ -27,11 +42,25 @@ class StatisticsStudent(Student):
 
 
 def get_student(id, row, codes):
-    reported = get_priorites(row, 'reported', codes)
-    real = get_priorites(row, 'real', codes)
-    if real is None and reported is None:
-        return None
-    return StatisticsStudent(id, reported, real)
+    student = StatisticsStudent(id)
+    student._reported = get_priorites(row, 'reported', codes)
+    student._real = get_priorites(row, 'real', codes)
+    student._age = int(row['Age'])
+    student._gender = int(row['Gender'])
+    student._university = int(row['University'])
+    student._course = int(row['Course'])
+    student._city = int(row['City'])
+    student._pair = row['Pair?']
+    student._result = row['Result']
+    student._manipulate = row['Did you manipulate?']
+    all_resons_str = row['All reasons']
+    print(all_resons_str)
+    if not isinstance(all_resons_str, float):
+        student._all_reasons = list(map(int, all_resons_str.split(',')))
+    student._exchange = row['Exchange?']
+    student._is_hat_better = row['IsHatBetter?']
+    student._understanding = row['Understanding']
+    return student
 
 
 def get_priorites(row, type, codes):
@@ -48,7 +77,7 @@ def get_priorites(row, type, codes):
         code = row[col_name + str(i)]
         if code is np.nan:
             return None
-        priorities.append(hospital_codes[int(code)])
+        priorities.append(codes[int(code)])
     return priorities
 
 
@@ -74,31 +103,4 @@ def parse_reported_raw(row):
     return priorities
 
 
-if __name__ == "__main__":
-    hospital_codes = {}
-    with open("res/hospitals codes.txt", encoding='utf8') as f:
-        for line in f:
-            val, key = line.split(",")
-            hospital_codes[int(key)] = val
 
-    data = pd.read_csv("res//Internship Lottery_April 8, 2018_11.54.csv")
-    students = []
-    for i in range(2, 241):
-        student = get_student(i + 2, data.iloc[i], hospital_codes)
-        if student is not None:
-            students.append(student)
-
-    real = 0
-    reported = 0
-    overlap = 0
-    for student in students:
-        if student.reported_priorities is not None:
-            reported += 1
-        if student.real_priorities is not None:
-            real += 1
-        if student.reported_priorities is not None and student.real_priorities is not None:
-            overlap += 1
-
-    print("real len: {}".format(real))
-    print("reported len: {}".format(reported))
-    print("overlap is: {}".format(overlap))

@@ -3,3 +3,9 @@ University = {1 : 'Tel-Aviv', 2 : 'Ben-Gurion', 3 : 'Tecnihon', 4 : 'Hebrew', 5 
 Course = {1 : '6 years, 2 : '4 years', 3 : 'Phd'}
 pair = {1 : 'yes', 2 : 'no'}
 manipulate = {1 : 'yes', 2 : 'no'}
+Exchange = {1 : "yes", 2 : "wanted but not manage to", 3 : "no"}
+IsHatBetter = {1 : "yes", 2 : "dont know", 3 : "no"}
+Understanding = {1 : "understand", 2 : "Understand in general", 3 : "Understand the basics", 4 : "Do not understand"}
+
+
+
