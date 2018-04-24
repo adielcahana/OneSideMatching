@@ -53,7 +53,10 @@ def time_test():
     global probs, solution, new_probs
     probs = timeit(assignments.expected_hat, students, hospitals, order, 100)
     solution = timeit(solve, probs, order, students)
-    new_probs = timeit(assignments.birkhoff_normalize, solution, hospitals)
+    new_probs, birkhoff_order = timeit(assignments.birkhoff_normalize, solution, hospitals, order)
+    coefficients, permutations = timeit(assignments.birkhoff_decoposition, new_probs)
+    result = timeit(assignments.birkhoff_lottery, coefficients, permutations)
+    print(result)
 
 
 if __name__ == "__main__":
