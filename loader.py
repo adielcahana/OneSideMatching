@@ -1,5 +1,4 @@
 import numpy as np
-import math
 import pandas as pd
 
 from data import Student
@@ -76,7 +75,7 @@ def get_priorites(row, type, codes):
         code = row[col_name + str(i)]
         if code is np.nan:
             return None
-        priorities.append(codes[int(code)])
+        priorities.append(hospital_codes[int(code)])
     return priorities
 
 
@@ -100,6 +99,3 @@ def parse_reported_raw(row):
                 last_word = True
     priorities.append(hospital)
     return priorities
-
-
-
