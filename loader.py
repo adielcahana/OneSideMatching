@@ -54,7 +54,6 @@ def get_student(id, row, codes):
     student._result = row['Result']
     student._manipulate = row['Did you manipulate?']
     all_resons_str = row['All reasons']
-    print(all_resons_str)
     if not isinstance(all_resons_str, float):
         student._all_reasons = list(map(int, all_resons_str.split(',')))
     student._exchange = row['Exchange?']
