@@ -7,16 +7,19 @@ import loader
 def single_real_hospital_votes():
     real_priority_list = get_attribute_list(students, "_real")
     votes_result = count_hospitals_choices(real_priority_list)
-    ax = plt.subplot(111)
 
     for hospital, vote in votes_result[0].items():
+        fig = plt.figure()
+        ax = plt.subplot(111)
         plt.title("votes for: " + hospital[::-1] + "\n" + "number of votes: " + str(votes_result[1]))
         plt.bar(list(range(1, 26)), vote,  align='center')
         plt.gca().set_xticks(list(range(1, 26)))
-        ax.set_xticklabels((list(map(str, range(1, 26)))), rotation=0, rotation_mode="anchor", ha="center")
+        plt.gca().set_yticks(list(range(0, 74, 5)))
         ax.set_xlabel("priority")
         ax.set_ylabel("number of votes")
-        plt.show()
+        #plt.show()
+        plt.savefig("plots/" + hospital + " real votes.png")
+        plt.close(fig)
 
 
 def draw_hist(students, list, label_names, title, x, y, x_name, y_name, rotate):

@@ -75,7 +75,7 @@ def get_priorites(row, type, codes):
         code = row[col_name + str(i)]
         if code is np.nan:
             return None
-        priorities.append(hospital_codes[int(code)])
+        priorities.append(codes[int(code)])
     return priorities
 
 
