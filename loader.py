@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 
@@ -86,18 +88,10 @@ def parse_reported_raw(row):
     if type(row["Reported Raw"]) is float:
         return None
     for element in row["Reported Raw"].split():
-        if element[-1] == ".":
-            last_word = False
-            if len(hospital) > 0:
-                priorities.append(hospital)
-                hospital = str()
-        else:
-            if last_word is True:
-                hospital += " " + element
-            else:
-                hospital = element
-                last_word = True
-    priorities.append(hospital)
+        hospital = element.split('.')[1]
+        if re.match("^[^0-9]+$", hospital) is None:
+            raise Exception('illegal hospital name: ' + hospital)
+        priorities.append(hospital)
     return priorities
 
 

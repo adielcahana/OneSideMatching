@@ -169,7 +169,7 @@ if __name__ == "__main__":
             val, key = line.split(",")
             hospital_codes[int(key)] = val
 
-    data = pd.read_csv("res//Internship Lottery_April 8, 2018_11.54.csv")
+    data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
     students = []
     for i in range(2, 241):
         student = loader.get_student(i + 2, data.iloc[i], hospital_codes)
@@ -185,6 +185,6 @@ if __name__ == "__main__":
     #understanding_stat(students)
     #pair_stat(students)
     #popular_hospitals_stat(students)
-    real_priority_hist(students)
-    #reported_priority_hist(students)
+    # real_priority_hist(students)
+    reported_priority_hist(students)
     # single_real_hospital_votes()
