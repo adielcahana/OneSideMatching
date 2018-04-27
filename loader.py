@@ -9,7 +9,7 @@ class StatisticsStudent(Student):
     def __init__(self, id):
         Student.__init__(self, id)
         self._reported = None
-        self._real_priorities = None
+        self._real = None
         self._age = None
         self._gender = None
         self._university = None
@@ -99,3 +99,20 @@ def parse_reported_raw(row):
                 last_word = True
     priorities.append(hospital)
     return priorities
+
+
+def get_votes():
+    data = pd.read_csv("res/פירוט העדפות.csv")
+    hospital_votes = dict()
+    for i in range(0, 25):
+        row = data.iloc[i]
+        name = row['Hospital']
+        votes = []
+        for j in range(1, 26):
+            count = row['Reported_' + str(j)]
+            if np.isnan(count):
+                votes.append(0)
+            else:
+                votes.append(int(count))
+            hospital_votes[name] = votes
+    return hospital_votes, 638
