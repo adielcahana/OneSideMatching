@@ -1,6 +1,7 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+
 import loader
 
 
@@ -174,16 +175,6 @@ if __name__ == "__main__":
         student = loader.get_student(i + 2, data.iloc[i], hospital_codes)
         if student is not None:
             students.append(student)
-    real = 0
-    reported = 0
-    overlap = 0
-    for student in students:
-        if student.reported_priorities is not None:
-            reported += 1
-        if student.real_priorities is not None:
-            real += 1
-        if student.reported_priorities is not None and student.real_priorities is not None:
-            overlap += 1
 
     # statistics
     #gender_stat(students)
@@ -194,10 +185,6 @@ if __name__ == "__main__":
     #understanding_stat(students)
     #pair_stat(students)
     #popular_hospitals_stat(students)
-    #real_priority_hist(students)
+    real_priority_hist(students)
     #reported_priority_hist(students)
-    single_real_hospital_votes()
-
-    print("real len: {}".format(real))
-    print("reported len: {}".format(reported))
-    print("overlap is: {}".format(overlap))
+    # single_real_hospital_votes()

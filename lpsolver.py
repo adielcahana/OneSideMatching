@@ -2,7 +2,7 @@ import numpy as np
 from pulp import *
 
 
-class Problem():
+class Problem:
     def __init__(self, probs, hospitals_order, students):
         self._students = students
         self._order = hospitals_order
