@@ -8,18 +8,33 @@ import loader
 def single_real_hospital_votes():
     real_priority_list = get_attribute_list(students, "_real")
     votes_result = count_hospitals_choices(real_priority_list)
+    single_hospital_votes(votes_result, " real votes.png", "real")
 
+
+def single_reported_hospital_votes():
+    real_priority_list = get_attribute_list(students, "_reported")
+    votes_result = count_hospitals_choices(real_priority_list)
+    single_hospital_votes(votes_result, " reported votes.png", "reported")
+
+
+def single_ministry_of_health_data():
+    votes_result = loader.get_votes()
+    single_hospital_votes(votes_result, " ministry data votes.png", "Ministry Of Health")
+
+
+def single_hospital_votes(votes_result, file_name, title):
     for hospital, vote in votes_result[0].items():
         fig = plt.figure()
         ax = plt.subplot(111)
-        plt.title("votes for: " + hospital[::-1] + "\n" + "number of votes: " + str(votes_result[1]))
+        plt.title(title + " votes for: " + hospital[::-1] + "\n" + "number of votes: " + str(votes_result[1]))
         plt.bar(list(range(1, 26)), vote,  align='center')
         plt.gca().set_xticks(list(range(1, 26)))
-        plt.gca().set_yticks(list(range(0, 74, 5)))
+        # sometimes need to adjust the range numbers ( y axis range = 450?, jumps = 20?)
+        plt.gca().set_yticks(list(range(0, 450, 20)))
         ax.set_xlabel("priority")
         ax.set_ylabel("number of votes")
         #plt.show()
-        plt.savefig("plots/" + hospital + " real votes.png")
+        plt.savefig("plots/" + hospital + file_name)
         plt.close(fig)
 
 
@@ -52,25 +67,45 @@ def count_hospitals_choices(real_priority_list):
 
 
 def real_priority_hist(students):
-    popular_hospitals_stat(students, "_real", "Hospital rating by students real priority")
-
-
-def reported_priority_hist(students):
-    popular_hospitals_stat(students, "_reported", "Hospital rating by students reported priority")
-
-
-def popular_hospitals_stat(students, attr, title):
     # get a list of the real priorities
-    real_priority_list = get_attribute_list(students, attr)
+    real_priority_list = get_attribute_list(students, "_real")
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in real_priority_list[0]:
         d_name_to_priority[hos_name] = np.zeros(len(real_priority_list[0]))
     # priority_counter - each hospital has a list of votes
     priority_counter, counter_legal_votes = count_hospitals_choices(real_priority_list)
-    num = len(real_priority_list[0])
+    popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority,
+                           "Hospital rating by students real priority")
+
+
+def reported_priority_hist(students):
+    # get a list of the real priorities
+    real_priority_list = get_attribute_list(students, "_reported")
+    d_name_to_priority = dict()
+    # initialize dictionary to key=name and value=priority list
+    for hos_name in real_priority_list[0]:
+        d_name_to_priority[hos_name] = np.zeros(len(real_priority_list[0]))
+    # priority_counter - each hospital has a list of votes
+    priority_counter, counter_legal_votes = count_hospitals_choices(real_priority_list)
+    popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority,
+                           "Hospital rating by students reported priority")
+
+
+def ministry_of_health_data():
+    priority_dict, num_of_students = loader.get_votes()
+    d_name_to_priority = dict()
+    # initialize dictionary to key=name and value=priority list
+    for hos_name in list(priority_dict.keys()):
+        d_name_to_priority[hos_name] = np.zeros(len(priority_dict.keys()))
+    popular_hospitals_stat(priority_dict, num_of_students, d_name_to_priority,
+                           "Hospital priority - Ministry Of Health data")
+
+
+def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority, title):
+    num = len(priority_counter)
     coefficient_vector = np.zeros(num)
-    for i in range(len(real_priority_list[0])):
+    for i in range(len(priority_counter)):
         coefficient_vector[i] = (num - i)**2
     for name, priority in priority_counter.items():
         d_name_to_priority[name] = np.dot(coefficient_vector, priority)
@@ -186,5 +221,8 @@ if __name__ == "__main__":
     #pair_stat(students)
     #popular_hospitals_stat(students)
     # real_priority_hist(students)
-    reported_priority_hist(students)
-    # single_real_hospital_votes()
+    #reported_priority_hist(students)
+    #single_real_hospital_votes()
+    #single_reported_hospital_votes()
+    single_ministry_of_health_data()
+    #ministry_of_health_data()
