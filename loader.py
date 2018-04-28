@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 
@@ -9,7 +11,7 @@ class StatisticsStudent(Student):
     def __init__(self, id):
         Student.__init__(self, id)
         self._reported = None
-        self._real_priorities = None
+        self._real = None
         self._age = None
         self._gender = None
         self._university = None
@@ -86,16 +88,25 @@ def parse_reported_raw(row):
     if type(row["Reported Raw"]) is float:
         return None
     for element in row["Reported Raw"].split():
-        if element[-1] == ".":
-            last_word = False
-            if len(hospital) > 0:
-                priorities.append(hospital)
-                hospital = str()
-        else:
-            if last_word is True:
-                hospital += " " + element
-            else:
-                hospital = element
-                last_word = True
-    priorities.append(hospital)
+        hospital = element.split('.')[1]
+        if re.match("^[^0-9]+$", hospital) is None:
+            raise Exception('illegal hospital name: ' + hospital)
+        priorities.append(hospital)
     return priorities
+
+
+def get_votes():
+    data = pd.read_csv("res/פירוט העדפות.csv")
+    hospital_votes = dict()
+    for i in range(0, 25):
+        row = data.iloc[i]
+        name = row['Hospital']
+        votes = []
+        for j in range(1, 26):
+            count = row['Reported_' + str(j)]
+            if np.isnan(count):
+                votes.append(0)
+            else:
+                votes.append(int(count))
+            hospital_votes[name] = votes
+    return hospital_votes, 638
