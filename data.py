@@ -29,6 +29,46 @@ class StatisticsStudent(Student):
         self.understanding = None
 
 
+class StatisticsStudent(Student):
+
+    def __init__(self, id):
+        Student.__init__(self, id)
+        self._reported = None
+        self._real = None
+        self._age = None
+        self._gender = None
+        self._university = None
+        self._course = None
+        self._city = None
+        self._pair = None
+        self._manipulate = None
+        self._all_reasons = None
+        self._exchange = None
+        self._is_hat_better = None
+        self._understanding = None
+
+    @property
+    def real(self):
+        return self._real
+
+    @real.setter
+    def real(self, real_priorities):
+        self._real = real_priorities
+
+    @property
+    def reported(self):
+        return self._reported
+
+    @reported.setter
+    def reported(self, reported_priorities):
+        self._reported = reported_priorities
+
+    def is_preferred(self, hospital):
+        if self._reported.index(hospital) < self._reported.index(self._result):
+            return True
+        return False
+
+
 class Hospitals:
     """
     a class that represents the number of seats for each hospital
