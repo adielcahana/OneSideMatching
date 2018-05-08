@@ -196,6 +196,24 @@ def gender_stat(students):
     draw_hist(gender_list, answers, "Gender", 0.9, 2.5, "", "number Of students", 0)
 
 
+# count how many students got one of their top 5 real priorities
+# (return the counter and their indexes)
+def get_from_top_5():
+    real_priority_list = get_attribute_list(students, "_real")
+    result_list = get_attribute_list(students, "_result")
+    i = 0
+    students_indexes = []
+    student_counter = 0
+    for student_list in real_priority_list:
+        if student_list:
+            top5 = student_list[:5]
+            if not pd.isnull(result_list[i]):
+                if hospital_codes[int(result_list[i])] in top5:
+                    student_counter += 1
+                    students_indexes.append(i)
+        i += 1
+    return student_counter, students_indexes
+
 if __name__ == "__main__":
     hospital_codes = data.get_codes("res/hospitals codes.txt")
     result_codes = data.get_codes("res/results codes.txt")
@@ -214,5 +232,7 @@ if __name__ == "__main__":
     #reported_priority_hist(students)
     #single_real_hospital_votes()
     #single_reported_hospital_votes()
-    single_ministry_of_health_data()
+    #single_ministry_of_health_data()
     #ministry_of_health_data()
+    get_from_top_5()
+
