@@ -51,6 +51,17 @@ def draw_hist(list, label_names, title, x, y, x_name, y_name, rotate):
     plt.show()
 
 
+def draw_hist2(students, list, label_names, title, x, y, x_name, y_name, rotate):
+    ax = plt.subplot(111)
+    plt.title(title)
+    plt.bar(label_names, list,  align='center')
+    plt.gca().set_xticks(label_names)
+
+    ax.set_xlabel(x_name)
+    ax.set_ylabel(y_name)
+    plt.show()
+
+
 def count_hospitals_choices(real_priority_list):
     d_name_to_list = dict()
     legal_counter_votes = 0
@@ -198,21 +209,40 @@ def gender_stat(students):
 
 # count how many students got one of their top 5 real priorities
 # (return the counter and their indexes)
-def get_from_top_5():
+def got_result_from_range():
     real_priority_list = get_attribute_list(students, "_real")
     result_list = get_attribute_list(students, "_result")
     i = 0
-    students_indexes = []
-    student_counter = 0
+    top5_counter = 0
+    five_ten_counter = 0
+    ten_fif_counter = 0
+    fif_twenty_counter = 0
+    last5_counter = 0
     for student_list in real_priority_list:
         if student_list:
             top5 = student_list[:5]
+            five_ten = student_list[5:10]
+            ten_fif = student_list[10:15]
+            fif_twenty = student_list[15:20]
+            last5 = student_list[20:25]
             if not pd.isnull(result_list[i]):
                 if hospital_codes[int(result_list[i])] in top5:
-                    student_counter += 1
-                    students_indexes.append(i)
+                    top5_counter += 1
+                if hospital_codes[int(result_list[i])] in five_ten:
+                    five_ten_counter += 1
+                if hospital_codes[int(result_list[i])] in ten_fif:
+                    ten_fif_counter += 1
+                if hospital_codes[int(result_list[i])] in fif_twenty:
+                    fif_twenty_counter += 1
+                if hospital_codes[int(result_list[i])] in last5:
+                    last5_counter += 1
         i += 1
-    return student_counter, students_indexes
+    num_of_participants = top5_counter+five_ten_counter+ten_fif_counter+fif_twenty_counter+last5_counter
+    draw_hist2(students, [top5_counter, five_ten_counter, ten_fif_counter, fif_twenty_counter, last5_counter],
+               ['1-5', '6-10', '11-15', '16-20', '21-25'],
+               "Placement of the final results according to the students' real choice ", 0.9, 2.0,
+               "results range \n participants:" + str(num_of_participants),
+               "number Of students", 0)
 
 if __name__ == "__main__":
     hospital_codes = data.get_codes("res/hospitals codes.txt")
@@ -234,5 +264,5 @@ if __name__ == "__main__":
     #single_reported_hospital_votes()
     #single_ministry_of_health_data()
     #ministry_of_health_data()
-    get_from_top_5()
+    got_result_from_range()
 
