@@ -58,6 +58,7 @@ class Hospitals:
     def __len__(self):
         return len(self.seats)
 
+    # read data from excel file (hospital list)
     @staticmethod
     def from_excel(path):
         hospital_list = pd.read_excel(path).as_matrix()
