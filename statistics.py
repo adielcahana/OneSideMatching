@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 import data
 
@@ -199,13 +198,7 @@ def gender_stat(students):
 
 if __name__ == "__main__":
     hospital_codes = data.get_hospital_codes()
-
-    data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
-    students = []
-    for i in range(2, 241):
-        student = data.get_student(i + 2, data.iloc[i], hospital_codes)
-        if student is not None:
-            students.append(student)
+    students = data.get_all_students(hospital_codes)
 
     # statistics
     #gender_stat(students)

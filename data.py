@@ -28,43 +28,8 @@ class StatisticsStudent(Student):
         self.is_hat_better = None
         self.understanding = None
 
-
-class StatisticsStudent(Student):
-
-    def __init__(self, id):
-        Student.__init__(self, id)
-        self._reported = None
-        self._real = None
-        self._age = None
-        self._gender = None
-        self._university = None
-        self._course = None
-        self._city = None
-        self._pair = None
-        self._manipulate = None
-        self._all_reasons = None
-        self._exchange = None
-        self._is_hat_better = None
-        self._understanding = None
-
-    @property
-    def real(self):
-        return self._real
-
-    @real.setter
-    def real(self, real_priorities):
-        self._real = real_priorities
-
-    @property
-    def reported(self):
-        return self._reported
-
-    @reported.setter
-    def reported(self, reported_priorities):
-        self._reported = reported_priorities
-
     def is_preferred(self, hospital):
-        if self._reported.index(hospital) < self._reported.index(self._assignment):
+        if self.reported.index(hospital) < self.reported.index(self.assignment):
             return True
         return False
 
@@ -149,6 +114,19 @@ def get_student(id, row, hospital_codes):
     student.is_hat_better = row['IsHatBetter?']
     student.understanding = row['Understanding']
     return student
+
+
+def get_all_students(hospital_codes):
+    """
+    get all the students data from the questionnaire
+    :return: list of all students
+    """
+    data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
+    students = []
+    for i in range(2, 241):
+        student = data.get_student(i + 2, data.iloc[i], hospital_codes)
+        if student is not None:
+            students.append(student)
 
 
 def get_priorities(row, type, hospital_codes):
