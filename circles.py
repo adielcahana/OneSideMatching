@@ -1,17 +1,15 @@
 import loader
-import randomizer
 
 hospital_codes = loader.get_hopital_codes()
-# students = loader.get_all_students(hospital_codes)
-students = randomizer.create_random_statistic_students(638, )
+students = loader.get_all_students(hospital_codes)
 
 temp = []
 results_before = []
 # trim students without reported priorities or result
 for student in students:
-    if student.reported is not None and student._result is not None:
+    if student.reported is not None and student._assignment is not None:
         temp.append(student)
-        results_before.append(student._result)
+        results_before.append(student._assignment)
 
 students = temp
 
@@ -22,18 +20,18 @@ while swaps != 0:
     itetation += 1
     swaps = 0
     for i in range(len(students)):
-        result_i = students[i]._result
+        result_i = students[i]._assignment
 
         for j in range(len(students)):
-            result_j = students[j]._result
+            result_j = students[j]._assignment
             if students[i].is_preferred(result_j) and students[j].is_preferred(result_i):
-                students[i]._result = result_j
-                students[j]._result = result_i
+                students[i]._assignment = result_j
+                students[j]._assignment = result_i
                 swaps += 1
 
 results_after = []
 for student in students:
-    results_after.append(student._result)
+    results_after.append(student._assignment)
 
 trades = 0
 for result in zip(results_before, results_after):

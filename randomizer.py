@@ -24,6 +24,7 @@ def create_random_students(size, hospitals):
         students.append(RandomStudent(i, hospitals))
     return students
 
+
 def create_random_statistic_students(size, hospitals):
     students = list()
     for i in range(size):

@@ -64,7 +64,7 @@ class StatisticsStudent(Student):
         self._reported = reported_priorities
 
     def is_preferred(self, hospital):
-        if self._reported.index(hospital) < self._reported.index(self._result):
+        if self._reported.index(hospital) < self._reported.index(self._assignment):
             return True
         return False
 
