@@ -1,6 +1,4 @@
-import loader
-import pandas as pd
-from data import Hospitals
+from data import Hospitals, StatisticsStudent
 from copy import deepcopy
 import numpy as np
 import assignments
@@ -10,9 +8,10 @@ import random
 
 
 def make_student_list(hospitals):
-    student = loader.StatisticsStudent(1)
-    student._reported = hospitals.names
-    student_list = []
+    student = StatisticsStudent(1)
+
+    student.reported = student.priorities = hospitals.names
+    student_list = list()
     student_list.append(student)
     for i in range(2, 83):
         # duplicate all fields like reported
@@ -63,7 +62,7 @@ def sim_change_one_student(num_of_flips):
     # the list of students with the same reported priorities
     students = make_student_list(hospitals)
     # students after the flips
-    students = flip_priorities(students, num_of_flips)
+    students = flip_priorities(students, num_of_flips, 0.5)
     # get the probs if everyone has the same reported priorities
     lottery_probs_same, order = make_lottery(students, hospitals)
     # happiness of everyone
@@ -80,7 +79,7 @@ def sim_change_one_student(num_of_flips):
         if result_happiness_after > result_happiness:
             improvement_happiness.append((same_reported_first_shuffle[0].priorities, result_happiness, result_happiness_after))
 
-    with open('improvement_happiness.csv', 'w') as resultFile:
+    with open('improvement_happiness0.csv', 'w') as resultFile:
         csv_out = csv.writer(resultFile)
         csv_out.writerow(['priorities', 'real happiness', 'after shuffle happiness'])
         for tup in improvement_happiness:
