@@ -210,7 +210,7 @@ def gender_stat(students):
 # count how many students got one of their top 5 real priorities
 # (return the counter and their indexes)
 def got_result_from_range():
-    real_priority_list = get_attribute_list(students, "_real")
+    real_priority_list = get_attribute_list(students, "_reported")
     result_list = get_attribute_list(students, "_result")
     i = 0
     top5_counter = 0
@@ -240,8 +240,8 @@ def got_result_from_range():
     num_of_participants = top5_counter+five_ten_counter+ten_fif_counter+fif_twenty_counter+last5_counter
     draw_hist2(students, [top5_counter, five_ten_counter, ten_fif_counter, fif_twenty_counter, last5_counter],
                ['1-5', '6-10', '11-15', '16-20', '21-25'],
-               "Placement of the final results according to the students' real choice ", 0.9, 2.0,
-               "results range \n participants:" + str(num_of_participants),
+               "Placement of the final results according to the students' reported choice ", 0.9, 2.0,
+               "Final placement range \n participants:" + str(num_of_participants),
                "number Of students", 0)
 
 if __name__ == "__main__":
