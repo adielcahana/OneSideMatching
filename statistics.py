@@ -1,25 +1,25 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import loader
+
+import data
 
 
 def single_real_hospital_votes():
-    real_priority_list = get_attribute_list(students, "_real")
+    real_priority_list = get_attribute_list(students, "real")
     votes_result = count_hospitals_choices(real_priority_list)
-    single_hospital_votes(votes_result, " real votes.png", "real")
+    single_hospital_votes(votes_result, "real votes.png", "real")
 
 
 def single_reported_hospital_votes():
-    real_priority_list = get_attribute_list(students, "_reported")
+    real_priority_list = get_attribute_list(students, "reported")
     votes_result = count_hospitals_choices(real_priority_list)
-    single_hospital_votes(votes_result, " reported votes.png", "reported")
+    single_hospital_votes(votes_result, "reported votes.png", "reported")
 
 
 def single_ministry_of_health_data():
-    votes_result = loader.get_votes()
-    single_hospital_votes(votes_result, " ministry data votes.png", "Ministry Of Health")
+    votes_result = data.get_votes()
+    single_hospital_votes(votes_result, "ministry data votes.png", "Ministry Of Health")
 
 
 def single_hospital_votes(votes_result, file_name, title):
@@ -38,7 +38,7 @@ def single_hospital_votes(votes_result, file_name, title):
         plt.close(fig)
 
 
-def draw_hist(students, list, label_names, title, x, y, x_name, y_name, rotate):
+def draw_hist(list, label_names, title, x, y, x_name, y_name, rotate):
     ax = plt.subplot(111)
     plt.title(title)
     labels, counts = np.unique(list, return_counts=True)
@@ -68,7 +68,7 @@ def count_hospitals_choices(real_priority_list):
 
 def real_priority_hist(students):
     # get a list of the real priorities
-    real_priority_list = get_attribute_list(students, "_real")
+    real_priority_list = get_attribute_list(students, "real")
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in real_priority_list[0]:
@@ -81,7 +81,7 @@ def real_priority_hist(students):
 
 def reported_priority_hist(students):
     # get a list of the real priorities
-    real_priority_list = get_attribute_list(students, "_reported")
+    real_priority_list = get_attribute_list(students, "reported")
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in real_priority_list[0]:
@@ -93,7 +93,7 @@ def reported_priority_hist(students):
 
 
 def ministry_of_health_data():
-    priority_dict, num_of_students = loader.get_votes()
+    priority_dict, num_of_students = data.get_votes()
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in list(priority_dict.keys()):
@@ -128,38 +128,38 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
 
 
 def pair_stat(students):
-    pairs = get_attribute_list(students, "_pair")
+    pairs = get_attribute_list(students, "pair")
     answers = ["Yes", "No", "unreported"]
-    draw_hist(students, pairs, answers, "Pair ?", -0.1, 0.7, "", "number Of students", 10)
+    draw_hist(pairs, answers, "Pair ?", -0.1, 0.7, "", "number Of students", 10)
 
 
 def get_attribute_list(students, attribute):
-    list = []
+    attribute_list = []
     for student in students:
-        list.append(getattr(student, attribute))
-    return list
+        attribute_list.append(getattr(student, attribute))
+    return attribute_list
 
 
 def understanding_stat(students):
-    understands = get_attribute_list(students, "_understanding")
+    understands = get_attribute_list(students, "understanding")
     answers = ["understand", "Understand in general", "Understand basics", "Do not understand", "unreported"]
-    draw_hist(students, understands, answers, "Understand the System", -0.1, 0.7, "", "number Of students", 10)
+    draw_hist(understands, answers, "Understand the System", -0.1, 0.7, "", "number Of students", 10)
 
 
 def is_hat_better_stat(students):
-    hat = get_attribute_list(students, "_is_hat_better")
+    hat = get_attribute_list(students, "is_hat_better")
     answers = ["Yes", "Dont Know", "No", "unreported"]
-    draw_hist(students, hat, answers, "Hat Better?", -0.1, 0.7, "", "number Of students", 10)
+    draw_hist(hat, answers, "Hat Better?", -0.1, 0.7, "", "number Of students", 10)
 
 
 def university_stat(students):
-    universities = get_attribute_list(students, "_university")
+    universities = get_attribute_list(students, "university")
     answers = ["Tel-Aviv", "Ben-Gurion", "Technion", "Hebrew", "Bar-Ilan"]
-    draw_hist(students, universities, answers, "University", 0.85, 0.7, "university-name", "number Of students", 10)
+    draw_hist(universities, answers, "University", 0.85, 0.7, "university-name", "number Of students", 10)
 
 
 def age_stat(students):
-    ages = get_attribute_list(students, "_age")
+    ages = get_attribute_list(students, "age")
     ages.remove(1)
     ax = plt.subplot(111)
     plt.title("Age")
@@ -179,35 +179,31 @@ def age_stat(students):
 def all_reasons_stat(students):
     all_reason = get_all_reasons(students)
     answers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    draw_hist(students, all_reason, answers, "Reason", 0.9, 2.0, "answer id", "number Of students", 0)
+    draw_hist(all_reason, answers, "Reason", 0.9, 2.0, "answer id", "number Of students", 0)
 
 
 def get_all_reasons(students):
     all_reasons_list = []
     for student in students:
-        if student._all_reasons is not None:
-            all_reasons_list += student._all_reasons
+        if student.all_reasons is not None:
+            all_reasons_list += student.all_reasons
     return all_reasons_list
 
 
 # gender hist
 def gender_stat(students):
-    gender_list = get_attribute_list(students, "_gender")
+    gender_list = get_attribute_list(students, "gender")
     answers = ['male', "female", "unreported"]
-    draw_hist(students, gender_list, answers, "Gender", 0.9, 2.5, "", "number Of students", 0)
+    draw_hist(gender_list, answers, "Gender", 0.9, 2.5, "", "number Of students", 0)
 
 
 if __name__ == "__main__":
-    hospital_codes = {}
-    with open("res/hospitals codes.txt", encoding='utf8') as f:
-        for line in f:
-            val, key = line.split(",")
-            hospital_codes[int(key)] = val
+    hospital_codes = data.get_hospital_codes()
 
     data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
     students = []
     for i in range(2, 241):
-        student = loader.get_student(i + 2, data.iloc[i], hospital_codes)
+        student = data.get_student(i + 2, data.iloc[i], hospital_codes)
         if student is not None:
             students.append(student)
 

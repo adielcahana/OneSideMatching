@@ -5,7 +5,7 @@ import numpy as np
 import assignments
 import randomizer
 from data import Hospitals
-from lpsolver import solve
+from lpsolver import Problem
 
 
 def timeit(func, *args):
@@ -52,17 +52,18 @@ def sainity_test():
 def time_test():
     global probs, solution, new_probs
     probs = timeit(assignments.expected_hat, students, hospitals, order, 100)
-    solution = timeit(solve, probs, order, students)
+    problem = Problem(probs, order, students)
+    solution = timeit(problem.solve)
     new_probs, birkhoff_order = timeit(assignments.birkhoff_normalize, solution, hospitals, order)
-    coefficients, permutations = timeit(assignments.birkhoff_decoposition, new_probs)
-    result = timeit(assignments.birkhoff_lottery, coefficients, permutations)
-    print(result)
+    #coefficients, permutations = timeit(assignments.birkhoff_decoposition, new_probs)
+    #result = timeit(assignments.birkhoff_lottery, coefficients, permutations)
+    #print(result)
 
 
 if __name__ == "__main__":
     np.random.seed(1)
-    hospitals = Hospitals.from_excel("res/hospital_list_test.xlsx")
-    students = randomizer.create_random_students(500, hospitals.names)
+    hospitals = Hospitals.from_csv("D:\Documents\לימודים\שנה ד\OneSideMatching\\res\seats_2018.csv")
+    students = randomizer.create_random_students(638, hospitals.names)
     order = assignments.get_hospitals_order(hospitals)
 
     probs = None

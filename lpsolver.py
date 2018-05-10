@@ -29,7 +29,7 @@ class Problem:
         # objective function
         coeff = get_happiness_coeff(self._order, self._students)
         self._problem += lpSum(
-            self._P[(i, j)] * coeff[i][j] for i in range(len(self._order)) for j in range(len(self._students)))
+            self._P[(i, j)] * coeff[i][j] for i in range(len(self._students)) for j in range(len(self._order)))
 
     # def set_objective_func(self , objective_func):
     #     self._problem += objective_func
