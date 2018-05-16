@@ -6,7 +6,7 @@ import assignments
 import lpsolver
 import csv
 import random
-
+import queue
 
 def make_student_list(hospitals):
     student = StatisticsStudent(1)
@@ -39,9 +39,8 @@ def make_lottery(students, hospitals):
     return new_probs, order
 
 
-def swap(list, item_a, item_b):
-    a, b = list.index(item_a), list.index(item_b)
-    list[b], list[a] = list[a], list[b]
+def swap(list, index_a, index_b):
+    list[index_b], list[index_a] = list[index_a], list[index_b]
 
 
 # change priorities in percentage chance
@@ -58,7 +57,39 @@ def flip_priorities(students, num_of_filps, percentage_chance):
     return students
 
 
-def simulation_flips_changes(num_of_flips, students, hospitals, strategies):
+def get_strategies(hospital_value: list(), priorities):
+    strategies = [["" for x in range(len(priorities))] for i in range(10)]
+
+    priorities_queue = queue.Queue()
+    [priorities_queue.put(i) for i in priorities]
+    top5 = hospital_value[:5]
+
+    # strategy 1: one place up - top 5 from hospital_value
+    # indices of top5 in priorities
+    indices = [priorities.index(x) for x in top5]
+    # fill strategies 1
+    for i in indices:
+        # same place like in the priority list don`t move
+        if i == top5.index(priorities[i]):
+            strategies[0][i] = priorities[i]
+        elif i-1 in indices:
+            strategies[0][i] = priorities[i]
+        else:
+            if i - 1 >= 0:
+                strategies[0][i - 1] = priorities[i]
+            else:
+                strategies[0][i] = priorities[i]
+
+    for j in range(len(priorities)):
+        next_item = priorities_queue.get()
+        # if empty string
+        if not strategies[0][j] and next_item not in top5:
+            strategies[0][j] = next_item
+
+    return strategies
+
+
+def simulation_flips_changes(num_of_flips, students , hospitals):
     # students after the flips
     students = flip_priorities(students, num_of_flips, 0.5)
     # get the probs if everyone has the same reported priorities
@@ -69,6 +100,11 @@ def simulation_flips_changes(num_of_flips, students, hospitals, strategies):
     result_happiness = np.dot(happiness[0], lottery_probs_same[0])
     improvement_happiness = []
     tuple_improve = list()
+
+    hospital_value = hospitals.values
+
+    strategies = get_strategies(hospital_value, deepcopy(students[0].priorities))
+
     for i in range(len(strategies)):
         # set the priorities of the first student with the i strategy
         students[0].priorities = strategies[i]
@@ -88,6 +124,7 @@ def simulation_flips_changes(num_of_flips, students, hospitals, strategies):
     return tuple_improve
 
 
+
 # all the students have the same priorities and we choose th first student and
 # changing his priorities randomly and calculate his new happiness according
 # of his new priorities
@@ -98,14 +135,10 @@ def flip_simulation():
     hospitals = Hospitals.from_csv("res/seats_2018.csv")
     # list of students with the same priorities
     students = make_student_list(hospitals)
-    strategies = list()
-    # student possible strategies (50 for now)
-    for i in range(50):
-        # get strategies
-        strategies.append(shuffle_one_student(deepcopy(students[0].priorities)))
+
     # run the simulation for 25 times with the same strategies and the same priorities
     for i in range(60):
-        tup = simulation_flips_changes(i, students, hospitals, strategies)
+        tup = simulation_flips_changes(i, students, hospitals)
         if tup:
             tuple_improve.append(tup)
             print(tup)
