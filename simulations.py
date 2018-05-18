@@ -7,6 +7,7 @@ import lpsolver
 import csv
 import random
 import queue
+import collections
 
 def make_student_list(hospitals):
     student = StatisticsStudent(1)
@@ -31,9 +32,9 @@ def shuffle_one_student(student_priorities):
 
 # after we got the same reported (except from  student[0])we make a lottery and check
 # if student[0] have a better probs
-def make_lottery(students, hospitals):
+def make_lottery(students, hospitals, num_of_iter):
     order = assignments.get_hospitals_order(hospitals)
-    probs = assignments.expected_hat(students, hospitals, order, 50)
+    probs = assignments.expected_hat(students, hospitals, order, num_of_iter)
     problem = lpsolver.Problem(probs, order, students)
     new_probs = problem.solve()
     return new_probs, order
@@ -53,51 +54,95 @@ def flip_priorities(students, num_of_filps, percentage_chance):
                 # swap 2 random items
                 rand_a = random.randint(0, len(priority_list) - 1)
                 rand_b = random.randint(0, len(priority_list) - 1)
-                swap(students[index].priorities, priority_list[rand_a], priority_list[rand_b])
+                swap(students[index].priorities, rand_a, rand_b)
     return students
 
 
-def get_strategies(hospital_value: list(), priorities):
-    strategies = [["" for x in range(len(priorities))] for i in range(10)]
+def fill_strategy(priorities_queue, strategy, placed_items):
+    for j in range(len(strategy)):
+        next_item = priorities_queue.popleft()
+        try:
+            index = next(i for i, k in enumerate(strategy) if k == "")
+            if next_item in strategy:
+                continue
+            else:
+                strategy[index] = next_item
+        except StopIteration:
+            pass
 
-    priorities_queue = queue.Queue()
-    [priorities_queue.put(i) for i in priorities]
-    top5 = hospital_value[:5]
+
+def strategy1(priorities, strategy, top5, hospital_value):
+    indices = [priorities.index(x) for x in top5]
+    indices.sort()
+    # fill strategies 1
+    for i in indices:
+        # same place as  at the priority list -> don`t move
+        if i-1 < 0 or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        # if the new position is already taken -> don`t move
+        elif strategy[i-1] == "":
+            strategy[i-1] = priorities[i]
+        # check if valid move
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+def strategy2(priorities, strategy, last5, hospital_value):
+    indices = [priorities.index(x) for x in last5]
+    indices.sort(reverse=True)
+    # indices = sorted(indices, key=int, reverse=True)
+    # fill strategy 2
+    for i in indices:
+        # same place as the last 5 items at priority list -> don`t move
+        if i+1 >= len(strategy) or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        elif strategy[i+1] == "":
+            strategy[i + 1] = priorities[i]
+        # if the new position is already taken -> don`t move
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+def get_strategies(hospital_value: list(), priorities):
+    # initialize list of lists of strategies
+    strategies = [["" for x in range(len(priorities))] for i in range(2)]
+    # queue with all the priorities by order
+    priorities_queue = collections.deque()
+    [priorities_queue.append(i) for i in priorities]
 
     # strategy 1: one place up - top 5 from hospital_value
     # indices of top5 in priorities
-    indices = [priorities.index(x) for x in top5]
-    # fill strategies 1
-    for i in indices:
-        # same place like in the priority list don`t move
-        if i == top5.index(priorities[i]):
-            strategies[0][i] = priorities[i]
-        elif i-1 in indices:
-            strategies[0][i] = priorities[i]
-        else:
-            if i - 1 >= 0:
-                strategies[0][i - 1] = priorities[i]
-            else:
-                strategies[0][i] = priorities[i]
+    top5 = hospital_value[:5]
+    # fill with top5
+    strategies[0] = strategy1(priorities, strategies[0], top5, hospital_value)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[0], top5)
 
-    for j in range(len(priorities)):
-        next_item = priorities_queue.get()
-        # if empty string
-        if not strategies[0][j] and next_item not in top5:
-            strategies[0][j] = next_item
+    # strategy 2: one place down - last 5 from hospital_value
+    # indices of last5 in priorities
+    last5 = hospital_value[-5:]
+    # fill with last5
+    strategies[1] = strategy2(priorities, strategies[1], last5, hospital_value)
+
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[1], last5)
 
     return strategies
 
 
-def simulation_flips_changes(num_of_flips, students , hospitals):
+def simulation_flips_changes(num_of_flips, students, hospitals):
     # students after the flips
     students = flip_priorities(students, num_of_flips, 0.5)
     # get the probs if everyone has the same reported priorities
-    lottery_probs_same, order = make_lottery(students, hospitals)
+    lottery_probs_same, order = make_lottery(students, hospitals, 80) #TODO 50 -> big number for better result
     # happiness of everyone
     happiness = lpsolver.get_happiness_coeff(order, students)
     # happiness of the first student
     result_happiness = np.dot(happiness[0], lottery_probs_same[0])
+    print("before......:", result_happiness)
+
     improvement_happiness = []
     tuple_improve = list()
 
@@ -108,21 +153,22 @@ def simulation_flips_changes(num_of_flips, students , hospitals):
     for i in range(len(strategies)):
         # set the priorities of the first student with the i strategy
         students[0].priorities = strategies[i]
-        lottery_probs, o = make_lottery(students, hospitals)
+        lottery_probs, o = make_lottery(students, hospitals, 80)
         # multiple from the result from solve (dot) lottery_probs
         result_happiness_after = np.dot(happiness[0], lottery_probs[0])
+        print("after:", result_happiness_after)
+        #TODO add range of mistake (like 5.0) result_happiness_after - 5.0 > result_happiness
         if result_happiness_after > result_happiness:
-            improvement_happiness.append((students[0].priorities, result_happiness, result_happiness_after))
+            improvement_happiness.append((students[0].priorities, result_happiness, result_happiness_after, i, num_of_flips))
     # if improvement_happiness not empty print the details
     if improvement_happiness:
         with open('results/improvement_happiness' + str(num_of_flips) + '.csv', 'w') as resultFile:
             csv_out = csv.writer(resultFile)
-            csv_out.writerow(['priorities', 'real happiness', 'after shuffle happiness'])
+            csv_out.writerow(['priorities', 'real happiness', 'after shuffle happiness', 'strategy index', 'num of flips'])
             for tup in improvement_happiness:
                 csv_out.writerow(tup)
         tuple_improve.append((num_of_flips, len(improvement_happiness)))
     return tuple_improve
-
 
 
 # all the students have the same priorities and we choose th first student and
@@ -137,7 +183,7 @@ def flip_simulation():
     students = make_student_list(hospitals)
 
     # run the simulation for 25 times with the same strategies and the same priorities
-    for i in range(60):
+    for i in range(20):
         tup = simulation_flips_changes(i, students, hospitals)
         if tup:
             tuple_improve.append(tup)
