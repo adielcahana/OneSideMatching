@@ -58,7 +58,7 @@ def flip_priorities(students, num_of_filps, percentage_chance):
     return students
 
 
-def fill_strategy(priorities_queue, strategy, placed_items):
+def fill_strategy(priorities_queue, strategy):
     for j in range(len(strategy)):
         next_item = priorities_queue.popleft()
         try:
@@ -91,8 +91,7 @@ def strategy1(priorities, strategy, top5, hospital_value):
 def strategy2(priorities, strategy, last5, hospital_value):
     indices = [priorities.index(x) for x in last5]
     indices.sort(reverse=True)
-    # indices = sorted(indices, key=int, reverse=True)
-    # fill strategy 2
+
     for i in indices:
         # same place as the last 5 items at priority list -> don`t move
         if i+1 >= len(strategy) or hospital_value[i] == priorities[i]:
@@ -105,9 +104,130 @@ def strategy2(priorities, strategy, last5, hospital_value):
     return strategy
 
 
+def strategy3(priorities, strategy, top3, hospital_value):
+    indices = [priorities.index(x) for x in top3]
+    indices.sort()
+    # fill strategies 3
+    for i in indices:
+        # same place as  at the priority list -> don`t move
+        if i-2 < 0 or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        # if the new position is already taken -> don`t move
+        elif strategy[i-2] == "":
+            strategy[i-2] = priorities[i]
+        # check if valid move
+        elif [i-1] == "":
+            strategy[i-1] = priorities[i]
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+def strategy4(priorities, strategy, last3, hospital_value):
+    indices = [priorities.index(x) for x in last3]
+    indices.sort(reverse=True)
+
+    for i in indices:
+        # same place as the last 5 items at priority list -> don`t move
+        if i+2 >= len(strategy) or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        elif strategy[i+2] == "":
+            strategy[i + 2] = priorities[i]
+        # if the new position is already taken -> don`t move
+        elif strategy[i+1] == "":
+            strategy[i+1] = priorities[i]
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+def strategy5(priorities, strategy, last3, top3, hospital_value):
+    indices_top = [priorities.index(x) for x in top3]
+    indices_top.sort()
+
+    for i in indices_top:
+        # same place as  at the priority list -> don`t move
+        if i-1 < 0 or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        # if the new position is already taken -> don`t move
+        elif strategy[i-1] == "":
+            strategy[i-1] = priorities[i]
+        # check if valid move
+        else:
+            strategy[i] = priorities[i]
+
+    indices_last = [priorities.index(x) for x in last3]
+    indices_last.sort(reverse=True)
+
+    for i in indices_last:
+        # same place as the last 5 items at priority list -> don`t move
+        if i+1 >= len(strategy) or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        elif strategy[i+1] == "":
+            strategy[i + 1] = priorities[i]
+        # if the new position is already taken -> don`t move
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+def strategy6(priorities, strategy, five_better_last5, hospital_value):
+    indices = [priorities.index(x) for x in five_better_last5]
+    indices.sort(reverse=True)
+
+    for i in indices:
+        # same place as the last 5 items at priority list -> don`t move
+        if i-1 < 0 or hospital_value[i] == priorities[i]:
+            strategy[i] = priorities[i]
+        elif strategy[i-1] == "":
+            strategy[i - 1] = priorities[i]
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+# def strategy7(priorities, strategy, hospital_value):
+#     return hospital_value
+
+
+# def strategy8(priorities, strategy, rate_20, hospital_value):
+#     strategy[4] = rate_20
+#     return strategy
+
+
+def strategy9(priorities, strategy, top5):
+    indices = [priorities.index(x) for x in top5]
+    indices.sort(reverse=True)
+
+    for i in indices:
+        # same place as the last 5 items at priority list -> don`t move
+        if i+1 >= len(strategy):
+            strategy[i] = priorities[i]
+        elif strategy[i+1] == "":
+            strategy[i + 1] = priorities[i]
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
+def strategy10(priorities, strategy, last5):
+    indices = [priorities.index(x) for x in last5]
+    indices.sort()
+
+    for i in indices:
+        # same place as the last 5 items at priority list -> don`t move
+        if i-1 < 0:
+            strategy[i] = priorities[i]
+        elif strategy[i-1] == "":
+            strategy[i - 1] = priorities[i]
+        else:
+            strategy[i] = priorities[i]
+    return strategy
+
+
 def get_strategies(hospital_value: list(), priorities):
     # initialize list of lists of strategies
-    strategies = [["" for x in range(len(priorities))] for i in range(2)]
+    strategies = [["" for x in range(len(priorities))] for i in range(10)]
     # queue with all the priorities by order
     priorities_queue = collections.deque()
     [priorities_queue.append(i) for i in priorities]
@@ -118,16 +238,65 @@ def get_strategies(hospital_value: list(), priorities):
     # fill with top5
     strategies[0] = strategy1(priorities, strategies[0], top5, hospital_value)
     # fill the rest places of the strategy according to the real priorities
-    fill_strategy(priorities_queue.copy(), strategies[0], top5)
+    fill_strategy(priorities_queue.copy(), strategies[0])
 
     # strategy 2: one place down - last 5 from hospital_value
     # indices of last5 in priorities
     last5 = hospital_value[-5:]
     # fill with last5
     strategies[1] = strategy2(priorities, strategies[1], last5, hospital_value)
-
     # fill the rest places of the strategy according to the real priorities
-    fill_strategy(priorities_queue.copy(), strategies[1], last5)
+    fill_strategy(priorities_queue.copy(), strategies[1])
+
+    # strategy 3: two place up - top 3 from hospital_value
+    # indices of top3 in priorities
+    top3 = hospital_value[:3]
+    # fill with top3
+    strategies[2] = strategy3(priorities, strategies[2], top3, hospital_value)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[2])
+
+    # strategy 4: two place down - last 3 from hospital_value
+    # indices of last3 in priorities
+    last3 = hospital_value[-3:]
+    # fill with last5
+    strategies[3] = strategy4(priorities, strategies[3], last3, hospital_value)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[3])
+
+    # strategy 5: top3 - one up, last3 - one down, from hospital_value
+    # last3 and top3 in hospital_value
+    last3 = hospital_value[-3:]
+    top3 = hospital_value[:3]
+    # fill with last5
+    strategies[4] = strategy5(priorities, strategies[4], last3, top3, hospital_value)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[4])
+
+    # strategy 6: positions of 15-19 - one up
+    before_last5 = hospital_value[15:20:1]
+    # fill with last5
+    strategies[5] = strategy6(priorities, strategies[5], before_last5, hospital_value)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[5])
+
+    # strategy 7: same priorities as hospital values
+    strategies[6] = hospital_value
+
+    # strategy 8: move item rated 20(hospital value) to position 5 of priorities
+    strategies[7][4] = hospital_value[20]
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[7])
+
+    # strategy 9: positions of top5 - one down
+    strategies[8] = strategy9(priorities, strategies[8], top5)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[8])
+
+    # strategy 10: positions of top5 - one down
+    strategies[9] = strategy10(priorities, strategies[9], last5)
+    # fill the rest places of the strategy according to the real priorities
+    fill_strategy(priorities_queue.copy(), strategies[9])
 
     return strategies
 
@@ -136,7 +305,7 @@ def simulation_flips_changes(num_of_flips, students, hospitals):
     # students after the flips
     students = flip_priorities(students, num_of_flips, 0.5)
     # get the probs if everyone has the same reported priorities
-    lottery_probs_same, order = make_lottery(students, hospitals, 80) #TODO 50 -> big number for better result
+    lottery_probs_same, order = make_lottery(students, hospitals, 100) #TODO 50 -> big number for better result
     # happiness of everyone
     happiness = lpsolver.get_happiness_coeff(order, students)
     # happiness of the first student
@@ -153,7 +322,7 @@ def simulation_flips_changes(num_of_flips, students, hospitals):
     for i in range(len(strategies)):
         # set the priorities of the first student with the i strategy
         students[0].priorities = strategies[i]
-        lottery_probs, o = make_lottery(students, hospitals, 80)
+        lottery_probs, o = make_lottery(students, hospitals, 100)
         # multiple from the result from solve (dot) lottery_probs
         result_happiness_after = np.dot(happiness[0], lottery_probs[0])
         print("after:", result_happiness_after)
@@ -183,7 +352,8 @@ def flip_simulation():
     students = make_student_list(hospitals)
 
     # run the simulation for 25 times with the same strategies and the same priorities
-    for i in range(20):
+    num_of_flips = 20
+    for i in range(num_of_flips):
         tup = simulation_flips_changes(i, students, hospitals)
         if tup:
             tuple_improve.append(tup)
@@ -191,6 +361,13 @@ def flip_simulation():
             print(" ")
     print("tuple improve results list: ")
     print(tuple_improve)
+
+# active flips simulation
+# num of flips get higher every iteration
+# student[0] is the trickster - he have 10 strategies - trying to improve his condition
+flip_simulation()
+
+
 
     # ax = plt.subplot(111)
     # plt.title("flips improve")
@@ -201,6 +378,3 @@ def flip_simulation():
     # ax.set_xlabel("number of flips")
     # ax.set_ylabel("number of Improves strategies")
     # plt.show()
-
-
-flip_simulation()
