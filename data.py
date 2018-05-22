@@ -105,7 +105,10 @@ def get_student(id, row, hospital_codes):
     student.course = int(row['Course'])
     student.city = int(row['City'])
     student.pair = row['Pair?']
-    student.assignment = row['Result']
+    if row['Result'] is np.nan:
+        student.assignment = ""
+    else:
+        student.assignment = hospital_codes[int(row['Result'])]
     student.manipulate = row['Did you manipulate?']
     all_resons_str = row['All reasons']
     if not isinstance(all_resons_str, float):
@@ -124,9 +127,11 @@ def get_all_students(hospital_codes):
     data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
     students = []
     for i in range(2, 241):
-        student = data.get_student(i + 2, data.iloc[i], hospital_codes)
+        student = get_student(i + 2, data.iloc[i], hospital_codes)
         if student is not None:
             students.append(student)
+
+    return students
 
 
 def get_priorities(row, type, hospital_codes):
