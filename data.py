@@ -28,6 +28,11 @@ class StatisticsStudent(Student):
         self.is_hat_better = None
         self.understanding = None
 
+    def is_preferred(self, hospital):
+        if self.reported.index(hospital) < self.reported.index(self.assignment):
+            return True
+        return False
+
 
 class Hospitals:
     """
@@ -100,7 +105,10 @@ def get_student(id, row, hospital_codes):
     student.course = int(row['Course'])
     student.city = int(row['City'])
     student.pair = row['Pair?']
-    student.assignment = row['Result']
+    if row['Result'] is np.nan:
+        student.assignment = ""
+    else:
+        student.assignment = hospital_codes[int(row['Result'])]
     student.manipulate = row['Did you manipulate?']
     all_resons_str = row['All reasons']
     if not isinstance(all_resons_str, float):
@@ -109,6 +117,21 @@ def get_student(id, row, hospital_codes):
     student.is_hat_better = row['IsHatBetter?']
     student.understanding = row['Understanding']
     return student
+
+
+def get_all_students(hospital_codes):
+    """
+    get all the students data from the questionnaire
+    :return: list of all students
+    """
+    data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
+    students = []
+    for i in range(2, 241):
+        student = get_student(i + 2, data.iloc[i], hospital_codes)
+        if student is not None:
+            students.append(student)
+
+    return students
 
 
 def get_priorities(row, type, hospital_codes):
