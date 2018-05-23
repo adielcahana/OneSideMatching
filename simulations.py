@@ -355,7 +355,7 @@ def flip_simulation(sim_number):
     students = make_student_list(hospitals)
 
     # run the simulation for 25 times with the same strategies and the same priorities
-    num_of_flips = 10
+    num_of_flips = 20
     for i in range(num_of_flips):
         tup = simulation_flips_changes(i, students, hospitals, sim_number)
         if tup:
@@ -420,7 +420,7 @@ def processing_results():
 # num of flips get higher every iteration
 # student[0] is the trickster - he have 10 strategies - trying to improve his condition
 def run_flips_simulations():
-    number_of_sim = 10
+    number_of_sim = 300
     for sim_num in range(number_of_sim):
         flip_simulation(sim_num)
 
