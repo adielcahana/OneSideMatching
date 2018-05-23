@@ -28,10 +28,15 @@ class StatisticsStudent(Student):
         self.is_hat_better = None
         self.understanding = None
 
-    def is_preferred(self, hospital):
-        if self.reported.index(hospital) < self.reported.index(self.assignment):
-            return True
-        return False
+    def is_preferred(self, hospital, priority_type):
+        if priority_type == 'reported':
+            if self.reported.index(hospital) < self.reported.index(self.assignment):
+                return True
+            return False
+        elif priority_type == 'real':
+            if self.real.index(hospital) < self.real.index(self.assignment):
+                return True
+            return False
 
 
 class Hospitals:

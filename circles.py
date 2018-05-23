@@ -4,13 +4,14 @@ import data
 
 hospital_codes = data.get_hospital_codes()
 students = data.get_all_students(hospital_codes)
-
+priority_type = 'real'
 
 columns = dict()
 for i in range(len(students[0].reported)):
-    columns['priority_' + str(i)] = []
+    columns[priority_type + '_' + str(i)] = []
 columns["id"] = []
 columns["result"] = []
+columns["result index"] = []
 
 
 temp = []
@@ -22,10 +23,11 @@ for student in students:
         temp.append(student)
         results_before.append(student.assignment)
         # add to file
-        for i, priority in enumerate(student.reported):
-            columns['priority_' + str(i)].append(priority)
+        for i, priority in enumerate(student.__getattribute__(priority_type)):
+            columns[priority_type + '_' + str(i)].append(priority)
         columns["id"].append(student.id)
         columns["result"].append(student.assignment)
+        columns["result index"].append(student.__getattribute__(priority_type).index(student.assignment))
 
 
 students = temp
@@ -36,19 +38,26 @@ itetation = 0
 while swaps != 0:
     itetation += 1
     swaps = 0
+    swaps_id = [student.id for student in students]
     for i in range(len(students)):
         result_i = students[i].assignment
-
         for j in range(len(students)):
             result_j = students[j].assignment
-            if students[i].is_preferred(result_j) and students[j].is_preferred(result_i):
+            if students[i].is_preferred(result_j, priority_type) and students[j].is_preferred(result_i, priority_type):
                 students[i].assignment = result_j
                 students[j].assignment = result_i
+
+                swaps_id[i], swaps_id[j] = swaps_id[j], swaps_id[i]
                 swaps += 1
+
     if swaps != 0:
-        columns["swap_" + str(itetation)] = []
+        swap_str = "swap_" + str(itetation)
+        columns[swap_str + " ids"] = swaps_id
+        columns[swap_str] = []
+        columns[swap_str + " index"] = []
         for student in students:
-            columns["swap_" + str(itetation)].append(student.assignment)
+            columns[swap_str].append(student.assignment)
+            columns[swap_str + " index"].append(student.__getattribute__(priority_type).index(student.assignment))
 
 
 results_after = []
