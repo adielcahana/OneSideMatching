@@ -6,8 +6,10 @@ import assignments
 import lpsolver
 import csv
 import random
-import queue
+import pandas as pd
 import collections
+from matplotlib.ticker import MaxNLocator
+import glob
 
 def make_student_list(hospitals):
     student = StatisticsStudent(1)
@@ -301,11 +303,11 @@ def get_strategies(hospital_value: list(), priorities):
     return strategies
 
 
-def simulation_flips_changes(num_of_flips, students, hospitals):
+def simulation_flips_changes(num_of_flips, students, hospitals, sim_number):
     # students after the flips
     students = flip_priorities(students, num_of_flips, 0.5)
     # get the probs if everyone has the same reported priorities
-    lottery_probs_same, order = make_lottery(students, hospitals, 100) #TODO 50 -> big number for better result
+    lottery_probs_same, order = make_lottery(students, hospitals, 100)
     # happiness of everyone
     happiness = lpsolver.get_happiness_coeff(order, students)
     # happiness of the first student
@@ -330,10 +332,11 @@ def simulation_flips_changes(num_of_flips, students, hospitals):
         if result_happiness_after > result_happiness:
             improvement_happiness.append((students[0].priorities, result_happiness, result_happiness_after, i, num_of_flips))
     # if improvement_happiness not empty print the details
-    if improvement_happiness:
-        with open('results/improvement_happiness' + str(num_of_flips) + '.csv', 'w') as resultFile:
+    if improvement_happiness or num_of_flips == 0:
+        with open('results/improvement_happiness' + str(sim_number) + '.csv', 'a', newline='') as resultFile:
             csv_out = csv.writer(resultFile)
-            csv_out.writerow(['priorities', 'real happiness', 'after shuffle happiness', 'strategy index', 'num of flips'])
+            if num_of_flips == 0:
+                csv_out.writerow(['priorities','real_happiness','after_strategy_happiness','strategy_id','num_of_flips'])
             for tup in improvement_happiness:
                 csv_out.writerow(tup)
         tuple_improve.append((num_of_flips, len(improvement_happiness)))
@@ -344,7 +347,7 @@ def simulation_flips_changes(num_of_flips, students, hospitals):
 # changing his priorities randomly and calculate his new happiness according
 # of his new priorities
 # it seems he always succeed to improve his happiness
-def flip_simulation():
+def flip_simulation(sim_number):
     tuple_improve = list()
     # hospitals have 2 fields : 1. names of hospitals, 2. num of seats to each hospital
     hospitals = Hospitals.from_csv("res/seats_2018.csv")
@@ -352,9 +355,9 @@ def flip_simulation():
     students = make_student_list(hospitals)
 
     # run the simulation for 25 times with the same strategies and the same priorities
-    num_of_flips = 20
+    num_of_flips = 10
     for i in range(num_of_flips):
-        tup = simulation_flips_changes(i, students, hospitals)
+        tup = simulation_flips_changes(i, students, hospitals, sim_number)
         if tup:
             tuple_improve.append(tup)
             print(tup)
@@ -362,19 +365,68 @@ def flip_simulation():
     print("tuple improve results list: ")
     print(tuple_improve)
 
-# active flips simulation
+
+def graph_flip_succeed_example():
+    # open and read the file results
+    result_file = open('results/improvement_happiness0.csv')
+    df = pd.read_csv(result_file)
+
+    # draw graph1 - improvement happiness by number of flips.
+    flips_column = df['num_of_flips'].real
+    num_of_flips, succeed_counter = np.unique(flips_column, return_counts=True)
+    fig, ax = plt.subplots()
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.plot(num_of_flips, succeed_counter)
+    ax.set(xlabel='number of flips', ylabel='improvements counter', title='improvements by flips number one_simulation')
+    ax.grid()
+    fig.savefig("results/flips_improvements_counter_one_simulation.png")
+    plt.show()
+
+
+def graph_flips_average_sum():
+    improvements_counter = np.zeros(1)
+    files_counter = 0
+    for result_file in glob.glob('results/*.csv'):
+        files_counter += 1
+        # open and read the file results
+        result = open(result_file)
+        df = pd.read_csv(result)
+
+        # draw graph2 - improvement happiness by number of flips.
+        flips_column = df['num_of_flips'].real
+        improvements_counter = np.append(improvements_counter, flips_column)
+    num_of_flips, succeed_counter = np.unique(improvements_counter, return_counts=True)
+    succeed_counter = np.divide(succeed_counter, files_counter)
+    fig, ax = plt.subplots()
+    # ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.plot(num_of_flips, succeed_counter)
+    ax.set(xlabel='number of flips', ylabel='improvements counter', title='Improvements by flips - Average')
+    ax.grid()
+    fig.savefig("results/flips_improvements_average_results.png")
+    plt.show()
+
+
+def processing_results():
+    # full graph description (average sum of the improvements according to flips)
+    graph_flips_average_sum()
+
+    # graph of one simulation from one csv file
+    # graph_flip_succeed_example()
+
+
+# active flips simulation:
 # num of flips get higher every iteration
 # student[0] is the trickster - he have 10 strategies - trying to improve his condition
-flip_simulation()
+def run_flips_simulations():
+    number_of_sim = 10
+    for sim_num in range(number_of_sim):
+        flip_simulation(sim_num)
+
+# run sim1
+run_flips_simulations()
+# process the results the of flips simulation
+processing_results()
 
 
-
-    # ax = plt.subplot(111)
-    # plt.title("flips improve")
-    # # crush here
-    # plt.bar([i[0] for i in tuple_improve], [j[1] for j in tuple_improve], align='center')
-    # #######
-    # plt.gca().set_xticks([i[0] for i in tuple_improve])
-    # ax.set_xlabel("number of flips")
-    # ax.set_ylabel("number of Improves strategies")
-    # plt.show()
