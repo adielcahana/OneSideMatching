@@ -69,7 +69,7 @@ for simulation in range(num_of_simulations):
         for i in indices:
             happiness_before.append(np.dot(np.asarray(coeff[i]), probs[i]))
 
-        problem = lpsolver.Problem(probs, order, students)
+        problem = lpsolver.AssignmentProblem(probs, order, students)
         new_probs = problem.solve()
 
         for i in indices:

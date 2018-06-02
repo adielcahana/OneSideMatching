@@ -2,7 +2,7 @@ import numpy as np
 from pulp import *
 
 
-class Problem:
+class AssignmentProblem:
     def __init__(self, probs, hospitals_order, students):
         self._students = students
         self._order = hospitals_order
@@ -27,12 +27,8 @@ class Problem:
             self._problem += lpSum(self._P[(row, j)] * coeff[row][j] for j in range(shape[1])) >= happiness[row]
 
         # objective function
-        coeff = get_happiness_coeff(self._order, self._students)
         self._problem += lpSum(
             self._P[(i, j)] * coeff[i][j] for i in range(len(self._students)) for j in range(len(self._order)))
-
-    # def set_objective_func(self , objective_func):
-    #     self._problem += objective_func
 
     def solve(self):
         self._problem.solve()
@@ -49,7 +45,18 @@ class Problem:
         return "no solution"
 
 
-def get_happiness_coeff(hospitals_order, students):
+def get_happiness_coeff(hospitals_order, students, type="quadratic"):
+    if type == 'quadratic':
+        return quad_happiness_coeff(hospitals_order, students)
+    elif type == 'linear':
+        return lin_happiness_coeff(hospitals_order, students)
+    elif type == 'median':
+        return median_happiness_coeff(hospitals_order, students)
+    else:
+        raise Exception("wrong type exception. use median/linear/quadratic")
+
+
+def quad_happiness_coeff(hospitals_order, students):
     coeff = np.zeros((len(students), len(hospitals_order)))
     i = 0
     m = len(hospitals_order)
@@ -62,3 +69,23 @@ def get_happiness_coeff(hospitals_order, students):
     return coeff
 
 
+def lin_happiness_coeff(hospitals_order, students):
+    coeff = np.zeros((len(students), len(hospitals_order)))
+    m = len(hospitals_order)
+    for i, student in enumerate(students):
+        for j, priority in enumerate(student.priorities):
+            coeff[i][hospitals_order[priority]] = m - j
+    return coeff
+
+
+def median_happiness_coeff(hospitals_order, students):
+    coeff = np.zeros((len(students), len(hospitals_order)))
+    m = len(hospitals_order)
+    median = int(m/2)
+    for i, student in enumerate(students):
+        for j, priority in enumerate(student.priorities):
+            if j < median:
+                coeff[i][hospitals_order[priority]] = (m - j - median) ** 2
+            if j > median:
+                coeff[i][hospitals_order[priority]] = -((m - j - median) ** 2)
+    return coeff
