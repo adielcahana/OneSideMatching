@@ -2,7 +2,7 @@ import numpy as np
 from birkhoff import birkhoff_von_neumann_decomposition
 
 from data import Hospitals
-from lpsolver import Problem
+from lpsolver import AssignmentProblem
 
 
 def get_hospitals_order(hospitals):
@@ -82,7 +82,7 @@ def set_assignments(students, birkhoff_order, permutation):
 def do_lottery(students, hospitals, num_of_iteration):
     order = get_hospitals_order(hospitals)
     probs = expected_hat(students, hospitals, order, num_of_iteration)
-    problem = Problem(probs, order, students)
+    problem = AssignmentProblem(probs, order, students)
     new_probs = problem.solve()
 
     normalize_probs, birkhoff_order = birkhoff_normalize(new_probs, hospitals, order)
