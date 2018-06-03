@@ -3,6 +3,7 @@ import pandas as pd
 from pulp import *
 
 import data
+from assignments import get_hospitals_order
 
 
 class SwapProblem:
@@ -22,22 +23,23 @@ class SwapProblem:
             self._problem += lpSum(self._assginments[(row, j)] for j in range(hospital_size)) == 1.0
 
         # seats constraints
+        order = sorted(hospitals_order.items(), key=lambda x: x[1])
         for col in range(hospital_size):
-            self._problem += lpSum(self._assginments[(i, col)] for i in range(students_size)) == seats[hospitals_order[col]]
+            self._problem += lpSum(self._assginments[(i, col)] for i in range(students_size)) == seats[order[col][0]]
 
         # objective function
         coeff = self.get_happiness_coeff(hospitals_order, students)
         self._problem += lpSum(
-            self._assginments[(i, j)] * coeff[i][j] for i in range(len(self._students)) for j in range(len(self._order)))
+            self._assginments[(i, j)] * coeff[i][j] for i in range(students_size) for j in range(hospital_size))
 
     def get_happiness_coeff(self, hospitals_order, students):
         coeff_mat = np.zeros((len(students), len(hospitals_order)))
-        for student in students:
+        for i, student in enumerate(students):
             assignment_idx = student.priorities.index(student.assignment)
-            for i, priority in enumerate(student.priorities):
-                if i < assignment_idx:
+            for j, priority in enumerate(student.priorities):
+                if j < assignment_idx:
                     coeff = 1
-                elif i == assignment_idx:
+                elif j == assignment_idx:
                     coeff = 0
                 else:
                     coeff = -9999
@@ -48,13 +50,14 @@ class SwapProblem:
         self._problem.solve()
 
         if self._problem.status == LpStatusOptimal:
+            order = sorted(self._order.items(), key=lambda x: x[1])
             for i, student in enumerate(self._students):
-                for j in range(len(self._order)):
+                for j in range(len(order)):
                     if self._assginments[(i, j)].varValue == 1:
-                        student.assignment = self._order[j]
+                        student.assignment = order[j][0]
             return self._students
 
-        return "no solution"
+        raise Exception("no solution")
 
 
 def preprocess(students, priority_type):
@@ -71,12 +74,13 @@ def preprocess(students, priority_type):
 
     # trim students without reported priorities or result
     for student in students:
-        if student.reported is not None and student.assignment is not "":
+        if student.__getattribute__(priority_type) is not None and student.assignment is not "":
+            student.priorities = student.__getattribute__(priority_type)
             temp.append(student)
             results_before.append(student.assignment)
-            if student.assignment in seats:
+            try:
                 seats[student.assignment] += 1
-            else:
+            except:
                 seats[student.assignment] = 1
             # add to file
             for i, priority in enumerate(student.__getattribute__(priority_type)):
@@ -126,8 +130,11 @@ if __name__ == "__main__":
 
     students, columns, results_before, seats = preprocess(students, priority_type)
 
-    # order = get_hospitals_order(seats)
-    # students = SwapProblem(seats, order, students).solve()
+    for name in hospital_codes.values():
+        if name not in set(seats.names):
+            seats[name] = 0
+    order = get_hospitals_order(seats)
+    students = SwapProblem(seats, order, students).solve()
 
     # students = find_simple_swaps(students, priority_type, columns)
     results_after = []
@@ -136,8 +143,8 @@ if __name__ == "__main__":
         results_after.append(student.assignment)
         result_after_index.append(student.priorities.index(student.assignment))
 
-    # columns["results after"] = results_after
-    # columns["results after idx"] = result_after_index
+    columns["results after"] = results_after
+    columns["results after idx"] = result_after_index
 
     trades = 0
     for result in zip(results_before, results_after):
@@ -145,4 +152,4 @@ if __name__ == "__main__":
             trades += 1
 
     print("number of swaps: " + str(trades))
-    pd.DataFrame(columns).to_csv("res/circles_result.csv")
+    pd.DataFrame(columns).to_csv("res/lp_circles_result.csv")

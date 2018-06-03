@@ -65,7 +65,7 @@ for simulation in range(num_of_simulations):
         for i in indices:
             students[i].priorities = students[i].real
 
-        coeff = lpsolver.get_happiness_coeff(order, students)
+        coeff = lpsolver.get_happiness_coeff(order, students, "quadratic")
         for i in indices:
             happiness_before.append(np.dot(np.asarray(coeff[i]), probs[i]))
 
