@@ -155,12 +155,12 @@ def get_priorities(row, type, hospital_codes):
         if priorities is not None:
             return priorities
 
-    priorities = []
+    priorities = [""] * len(hospital_codes)
     for i in range(1, len(hospital_codes) + 1):
-        code = row[col_name + str(i)]
-        if code is np.nan:
+        index = row[col_name + str(i)]
+        if index is np.nan:
             return None
-        priorities.append(hospital_codes[int(code)])
+        priorities[index] = hospital_codes[i]
     return priorities
 
 
