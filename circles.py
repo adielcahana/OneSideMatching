@@ -124,8 +124,9 @@ def find_simple_swaps(students, priority_type, columns):
 
 
 if __name__ == "__main__":
-    hospital_codes = data.get_hospital_codes()
-    students = data.get_all_students(hospital_codes)
+    hospital_codes = data.get_codes("res/hospitals codes.txt")
+    results_codes = data.get_codes("res/results codes.txt")
+    students = data.get_all_students(hospital_codes, results_codes)
     priority_type = 'real'
 
     students, columns, results_before, seats = preprocess(students, priority_type)

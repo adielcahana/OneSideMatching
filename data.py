@@ -93,7 +93,7 @@ class Hospitals:
         return list(self.seats.keys())
 
 
-def get_student(id, row, hospital_codes):
+def get_student(id, row, hospital_codes, results_codes):
     """
     extract student data from the questionnaire
     :param id: student id (currently using the row number)
@@ -113,7 +113,7 @@ def get_student(id, row, hospital_codes):
     if row['Result'] is np.nan:
         student.assignment = ""
     else:
-        student.assignment = hospital_codes[int(row['Result'])]
+        student.assignment = results_codes[int(row['Result'])]
     student.manipulate = row['Did you manipulate?']
     all_resons_str = row['All reasons']
     if not isinstance(all_resons_str, float):
@@ -124,7 +124,7 @@ def get_student(id, row, hospital_codes):
     return student
 
 
-def get_all_students(hospital_codes):
+def get_all_students(hospital_codes, results_codes):
     """
     get all the students data from the questionnaire
     :return: list of all students
@@ -132,7 +132,7 @@ def get_all_students(hospital_codes):
     data = pd.read_csv("res/Internship Lottery_April 8, 2018_11.54_correct encoding.csv", encoding='iso-8859-8')
     students = []
     for i in range(2, 241):
-        student = get_student(i + 2, data.iloc[i], hospital_codes)
+        student = get_student(i + 2, data.iloc[i], hospital_codes, results_codes)
         if student is not None:
             students.append(student)
 
@@ -160,7 +160,7 @@ def get_priorities(row, type, hospital_codes):
         index = row[col_name + str(i)]
         if index is np.nan:
             return None
-        priorities[index] = hospital_codes[i]
+        priorities[int(index) - 1] = hospital_codes[i]
     return priorities
 
 
@@ -200,13 +200,13 @@ def get_votes():
     return hospital_votes, 638
 
 
-def get_hospital_codes():
+def get_codes(path):
     """
     get a mapping from hospital code to hospital name
     :return: hospital codes map
     """
     hospital_codes = {}
-    with open("res/hospitals codes.txt", encoding='utf8') as f:
+    with open(path, encoding='utf8') as f:
         for line in f:
             val, key = line.split(",")
             hospital_codes[int(key)] = val

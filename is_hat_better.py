@@ -9,12 +9,13 @@ import data
 import lpsolver
 
 np.random.seed(int(time.time()))
-num_of_simulations = 100
+num_of_simulations = 10
 hospitals = data.Hospitals.from_csv("D:\Documents\לימודים\שנה ד\OneSideMatching\\res\seats_2018.csv")
 order = assignments.get_hospitals_order(hospitals)
 
-hospital_codes = data.get_hospital_codes()
-students = data.get_all_students(hospital_codes)
+hospital_codes = data.get_codes("res/hospitals codes.txt")
+result_codes = data.get_codes("res/results codes.txt")
+students = data.get_all_students(hospital_codes, result_codes)
 temp = []
 
 # trim students without reported priorities or result
@@ -56,7 +57,7 @@ happiness_reported_alg = np.zeros((num_of_simulations, len(students)))
 happiness_onereal_alg = np.zeros((num_of_simulations, len(students)))
 happiness_onereal_expected = np.zeros((num_of_simulations, len(students)))
 
-coeff = lpsolver.get_happiness_coeff(order, students, 'median')
+coeff = lpsolver.get_happiness_coeff(order, students, 'quadratic')
 for simulation in range(num_of_simulations):
     # revert the random students to say the reported priorites
     for student in students:
@@ -67,7 +68,7 @@ for simulation in range(num_of_simulations):
         happiness_real_expcted[simulation][i] += np.dot(np.asarray(coeff[i]), probs[i])
 
     # happiness with real priorities and our algorithm
-    problem = lpsolver.AssignmentProblem(probs, order, students, 'median')
+    problem = lpsolver.AssignmentProblem(probs, order, students, 'quadratic')
     new_probs = problem.solve()
     for i in range(len(students)):
         happiness_real_alg[simulation][i] += np.dot(np.asarray(coeff[i]), new_probs[i])
@@ -81,7 +82,7 @@ for simulation in range(num_of_simulations):
         happiness_reporteded_expcted[simulation][i] += np.dot(np.asarray(coeff[i]), probs[i])
 
     # happiness with reported priorities and our algorithm
-    problem = lpsolver.AssignmentProblem(probs, order, students, 'median')
+    problem = lpsolver.AssignmentProblem(probs, order, students, 'quadratic')
     new_probs = problem.solve()
     for i in range(len(students)):
         happiness_reported_alg[simulation][i] += np.dot(np.asarray(coeff[i]), new_probs[i])
@@ -93,19 +94,19 @@ for simulation in range(num_of_simulations):
         probs = assignments.expected_hat(students, hospitals, order, 1000)
         happiness_onereal_expected[simulation][idx] = np.dot(np.asarray(coeff[idx]), probs[idx])
 
-        problem = lpsolver.AssignmentProblem(probs, order, students, 'median')
+        problem = lpsolver.AssignmentProblem(probs, order, students, 'quadratic')
         new_probs = problem.solve()
         happiness_onereal_alg[simulation][idx] = np.dot(np.asarray(coeff[idx]), new_probs[idx])
 
         student.priorities = student.reported
 
 
-np.savetxt("res/is hat better/median/reaported_lp.csv", happiness_reported_alg, delimiter=",")
-np.savetxt("res/is hat better/median/reaported_hat.csv", happiness_reporteded_expcted, delimiter=",")
-np.savetxt("res/is hat better/median/real_hat.csv", happiness_real_expcted, delimiter=",")
-np.savetxt("res/is hat better/median/real_lp.csv", happiness_real_alg, delimiter=",")
-np.savetxt("res/is hat better/median/onelie_hat.csv", happiness_onereal_expected, delimiter=",")
-np.savetxt("res/is hat better/median/onelie_lp.csv", happiness_onereal_alg, delimiter=",")
+np.savetxt("res/is hat better/quadratic/reaported_lp.csv", happiness_reported_alg, delimiter=",")
+np.savetxt("res/is hat better/quadratic/reaported_hat.csv", happiness_reporteded_expcted, delimiter=",")
+np.savetxt("res/is hat better/quadratic/real_hat.csv", happiness_real_expcted, delimiter=",")
+np.savetxt("res/is hat better/quadratic/real_lp.csv", happiness_real_alg, delimiter=",")
+np.savetxt("res/is hat better/quadratic/onelie_hat.csv", happiness_onereal_expected, delimiter=",")
+np.savetxt("res/is hat better/quadratic/onelie_lp.csv", happiness_onereal_alg, delimiter=",")
 
 students_x = np.arange(0, len(students))
 p1 = plt.errorbar(students_x, np.average(happiness_real_expcted, axis=0), yerr=np.std(happiness_real_expcted, axis=0))

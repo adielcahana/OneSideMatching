@@ -13,8 +13,9 @@ num_of_simulations = 100
 hospitals = data.Hospitals.from_csv("D:\Documents\לימודים\שנה ד\OneSideMatching\\res\seats_2018.csv")
 order = assignments.get_hospitals_order(hospitals)
 
-hospital_codes = data.get_hospital_codes()
-students = data.get_all_students(hospital_codes)
+hospital_codes = data.get_codes("res/hospitals codes.txt")
+result_codes = data.get_codes("res/results codes.txt")
+students = data.get_all_students(hospital_codes, result_codes)
 temp = []
 
 # trim students without reported priorities or result
