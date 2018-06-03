@@ -9,7 +9,7 @@ import data
 import lpsolver
 
 np.random.seed(int(time.time()))
-num_of_simulations = 3
+num_of_simulations = 100
 hospitals = data.Hospitals.from_csv("D:\Documents\לימודים\שנה ד\OneSideMatching\\res\seats_2018.csv")
 order = assignments.get_hospitals_order(hospitals)
 
@@ -56,18 +56,18 @@ happiness_reported_alg = np.zeros((num_of_simulations, len(students)))
 happiness_onereal_alg = np.zeros((num_of_simulations, len(students)))
 happiness_onereal_expected = np.zeros((num_of_simulations, len(students)))
 
-coeff = lpsolver.get_happiness_coeff(order, students)
+coeff = lpsolver.get_happiness_coeff(order, students, 'median')
 for simulation in range(num_of_simulations):
     # revert the random students to say the reported priorites
     for student in students:
         student.priorities = student.real
     # happiness with real priorities and expected hat
-    probs = assignments.expected_hat(students, hospitals, order, 100)
+    probs = assignments.expected_hat(students, hospitals, order, 1000)
     for i in range(len(students)):
         happiness_real_expcted[simulation][i] += np.dot(np.asarray(coeff[i]), probs[i])
 
     # happiness with real priorities and our algorithm
-    problem = lpsolver.AssignmentProblem(probs, order, students)
+    problem = lpsolver.AssignmentProblem(probs, order, students, 'median')
     new_probs = problem.solve()
     for i in range(len(students)):
         happiness_real_alg[simulation][i] += np.dot(np.asarray(coeff[i]), new_probs[i])
@@ -76,12 +76,12 @@ for simulation in range(num_of_simulations):
         student.priorities = student.reported
 
     # happiness with reported priorities and expected hat
-    probs = assignments.expected_hat(students, hospitals, order, 100)
+    probs = assignments.expected_hat(students, hospitals, order, 1000)
     for i in range(len(students)):
         happiness_reporteded_expcted[simulation][i] += np.dot(np.asarray(coeff[i]), probs[i])
 
     # happiness with reported priorities and our algorithm
-    problem = lpsolver.AssignmentProblem(probs, order, students)
+    problem = lpsolver.AssignmentProblem(probs, order, students, 'median')
     new_probs = problem.solve()
     for i in range(len(students)):
         happiness_reported_alg[simulation][i] += np.dot(np.asarray(coeff[i]), new_probs[i])
@@ -93,19 +93,19 @@ for simulation in range(num_of_simulations):
         probs = assignments.expected_hat(students, hospitals, order, 1000)
         happiness_onereal_expected[simulation][idx] = np.dot(np.asarray(coeff[idx]), probs[idx])
 
-        problem = lpsolver.AssignmentProblem(probs, order, students)
+        problem = lpsolver.AssignmentProblem(probs, order, students, 'median')
         new_probs = problem.solve()
         happiness_onereal_alg[simulation][idx] = np.dot(np.asarray(coeff[idx]), new_probs[idx])
 
         student.priorities = student.reported
 
 
-# np.savetxt("res/reaported_lp.csv", happiness_reported_alg, delimiter=",")
-# np.savetxt("res/reaported_hat.csv", happiness_reporteded_expcted, delimiter=",")
-# np.savetxt("res/real_hat.csv", happiness_real_expcted, delimiter=",")
-# np.savetxt("res/real_lp.csv", happiness_real_alg, delimiter=",")
-# np.savetxt("res/onelie_hat.csv", happiness_onelie_expected, delimiter=",")
-# np.savetxt("res/onelie_lp.csv", happiness_onelie_alg, delimiter=",")
+np.savetxt("res/is hat better/median/reaported_lp.csv", happiness_reported_alg, delimiter=",")
+np.savetxt("res/is hat better/median/reaported_hat.csv", happiness_reporteded_expcted, delimiter=",")
+np.savetxt("res/is hat better/median/real_hat.csv", happiness_real_expcted, delimiter=",")
+np.savetxt("res/is hat better/median/real_lp.csv", happiness_real_alg, delimiter=",")
+np.savetxt("res/is hat better/median/onelie_hat.csv", happiness_onereal_expected, delimiter=",")
+np.savetxt("res/is hat better/median/onelie_lp.csv", happiness_onereal_alg, delimiter=",")
 
 students_x = np.arange(0, len(students))
 p1 = plt.errorbar(students_x, np.average(happiness_real_expcted, axis=0), yerr=np.std(happiness_real_expcted, axis=0))

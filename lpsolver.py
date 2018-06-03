@@ -3,7 +3,7 @@ from pulp import *
 
 
 class AssignmentProblem:
-    def __init__(self, probs, hospitals_order, students):
+    def __init__(self, probs, hospitals_order, students, happiness_type="quadratic"):
         self._students = students
         self._order = hospitals_order
         shape = probs.shape
@@ -21,7 +21,7 @@ class AssignmentProblem:
             self._problem += lpSum(self._P[(i, col)] for i in range(shape[0])) <= columns_sum[col]
 
         # happiness constraint
-        coeff = get_happiness_coeff(hospitals_order, students)
+        coeff = get_happiness_coeff(hospitals_order, students, happiness_type)
         happiness = [np.dot(probs[i], coeff[i]) for i in range(shape[0])]
         for row in range(shape[0]):
             self._problem += lpSum(self._P[(row, j)] * coeff[row][j] for j in range(shape[1])) >= happiness[row]
@@ -45,12 +45,12 @@ class AssignmentProblem:
         return "no solution"
 
 
-def get_happiness_coeff(hospitals_order, students, type="quadratic"):
-    if type == 'quadratic':
+def get_happiness_coeff(hospitals_order, students, happiness_type):
+    if happiness_type == 'quadratic':
         return quad_happiness_coeff(hospitals_order, students)
-    elif type == 'linear':
+    elif happiness_type == 'linear':
         return lin_happiness_coeff(hospitals_order, students)
-    elif type == 'median':
+    elif happiness_type == 'median':
         return median_happiness_coeff(hospitals_order, students)
     else:
         raise Exception("wrong type exception. use median/linear/quadratic")
