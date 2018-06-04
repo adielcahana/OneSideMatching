@@ -13,8 +13,9 @@ num_of_simulations = 100
 hospitals = data.Hospitals.from_csv("D:\Documents\לימודים\שנה ד\OneSideMatching\\res\seats_2018.csv")
 order = assignments.get_hospitals_order(hospitals)
 
-hospital_codes = data.get_hospital_codes()
-students = data.get_all_students(hospital_codes)
+hospital_codes = data.get_codes("res/hospitals codes.txt")
+result_codes = data.get_codes("res/results codes.txt")
+students = data.get_all_students(hospital_codes, result_codes)
 temp = []
 
 # trim students without reported priorities or result
@@ -65,11 +66,11 @@ for simulation in range(num_of_simulations):
         for i in indices:
             students[i].priorities = students[i].real
 
-        coeff = lpsolver.get_happiness_coeff(order, students)
+        coeff = lpsolver.get_happiness_coeff(order, students, "quadratic")
         for i in indices:
             happiness_before.append(np.dot(np.asarray(coeff[i]), probs[i]))
 
-        problem = lpsolver.Problem(probs, order, students)
+        problem = lpsolver.AssignmentProblem(probs, order, students)
         new_probs = problem.solve()
 
         for i in indices:

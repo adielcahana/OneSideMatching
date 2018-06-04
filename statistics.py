@@ -197,8 +197,9 @@ def gender_stat(students):
 
 
 if __name__ == "__main__":
-    hospital_codes = data.get_hospital_codes()
-    students = data.get_all_students(hospital_codes)
+    hospital_codes = data.get_codes("res/hospitals codes.txt")
+    result_codes = data.get_codes("res/results codes.txt")
+    students = data.get_all_students(hospital_codes, result_codes)
 
     # statistics
     #gender_stat(students)

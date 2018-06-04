@@ -5,7 +5,7 @@ import numpy as np
 import assignments
 import randomizer
 from data import Hospitals
-from lpsolver import Problem
+from lpsolver import AssignmentProblem
 
 
 def timeit(func, *args):
@@ -52,7 +52,7 @@ def sainity_test():
 def time_test():
     global probs, solution, new_probs
     probs = timeit(assignments.expected_hat, students, hospitals, order, 100)
-    problem = Problem(probs, order, students)
+    problem = AssignmentProblem(probs, order, students)
     solution = timeit(problem.solve)
     new_probs, birkhoff_order = timeit(assignments.birkhoff_normalize, solution, hospitals, order)
     #coefficients, permutations = timeit(assignments.birkhoff_decoposition, new_probs)
