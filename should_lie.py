@@ -51,46 +51,65 @@ not_lying_precentages = np.arange(0, 1.1, 0.1)
 not_lying_count = np.asarray(not_lying_precentages * len(students), dtype=np.int64)
 # counter of number of students that profit from not lying in each precentage
 shouldnt_lie = np.zeros(len(not_lying_precentages))
+should_lie = np.zeros(len(not_lying_precentages))
 
-
+happiness_type = 'quadratic'
 for simulation in range(num_of_simulations):
     for index, precentage in enumerate(not_lying_precentages):
         # select random students to say the truth
-        indices = np.random.randint(0, len(students), not_lying_count[index])
+        real_students_indices = np.random.randint(0, len(students), not_lying_count[index])
+        reported_students_indices = np.asarray(set(np.arange(len(students))) - set(real_students_indices))
         #happines of the students with reported priorities
-        happiness_before = []
+        real_students_happiness_before = []
         # happines of the students with real priorities
-        happiness_after = []
+        real_students_happiness_after = []
+
+        # happines of the students with reported priorities
+        reported_students_happiness_before = []
+        # happines of the students with real priorities
+        reported_students_happiness_after = []
+
 
         probs = assignments.expected_hat(students, hospitals, order, 1000)
-        for i in indices:
+        for i in real_students_indices:
             students[i].priorities = students[i].real
 
-        coeff = lpsolver.get_happiness_coeff(order, students, "quadratic")
-        for i in indices:
-            happiness_before.append(np.dot(np.asarray(coeff[i]), probs[i]))
-
-        problem = lpsolver.AssignmentProblem(probs, order, students)
+        coeff = lpsolver.get_happiness_coeff(order, students, happiness_type)
+        problem = lpsolver.AssignmentProblem(probs, order, students, happiness_type)
         new_probs = problem.solve()
+        for i in real_students_indices:
+            real_students_happiness_before.append(np.dot(np.asarray(coeff[i]), new_probs[i]))
+        for i in reported_students_indices:
+            reported_students_happiness_before.append(np.dot(np.asarray(coeff[i]), new_probs[i]))
 
-        for i in indices:
-            happiness_after.append(np.dot(np.asarray(coeff[i]), new_probs[i]))
+        problem = lpsolver.AssignmentProblem(probs, order, students, happiness_type)
+        new_probs = problem.solve()
+        for i in real_students_indices:
+            real_students_happiness_after.append(np.dot(np.asarray(coeff[i]), new_probs[i]))
+        for i in reported_students_indices:
+            reported_students_happiness_after.append(np.dot(np.asarray(coeff[i]), new_probs[i]))
 
-        for i in range(len(happiness_before)):
-            if happiness_after[i] > happiness_before[i]:
+        for i in range(len(real_students_indices)):
+            if real_students_happiness_after[i] > real_students_happiness_before[i]:
                 shouldnt_lie[index] += 1
+        for i in range(len(reported_students_indices)):
+            if reported_students_happiness_after[i] > reported_students_happiness_before[i]:
+                should_lie[index] += 1
 
         # revert the random students to say the reported priorites
-        for i in indices:
+        for i in real_students_indices:
             students[i].priorities = students[i].reported
 
 # average over number of simulations
 shouldnt_lie /= num_of_simulations
 shouldnt_lie_precentage = shouldnt_lie / not_lying_count
+should_lie_precentage = should_lie / (len(students) - not_lying_count)
 # fix nan at first index
 shouldnt_lie[0] = 0
-plt.plot(not_lying_precentages, shouldnt_lie_precentage)
+p1, _ = plt.plot(not_lying_precentages, shouldnt_lie_precentage)
+p2, _ = plt.plot(not_lying_precentages, should_lie_precentage)
+plt.legend([p1, p2], ["students with real priorites","students with reported priorites"])
 plt.xlabel("precentage of students with real priorites")
-plt.ylabel("avarege precentage of the students\n with real priorites that profit from not lying")
+plt.ylabel("avarege precentage of the students\n with real priorites that profit from their strategy")
 plt.title("is lying profitable?\n N = " + str(len(students)) + "\n averaged over " + str(num_of_simulations) +" simulations")
 plt.show()
