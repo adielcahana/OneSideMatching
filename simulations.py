@@ -11,6 +11,7 @@ import collections
 from matplotlib.ticker import MaxNLocator
 import glob
 
+
 def make_student_list(hospitals):
     student = StatisticsStudent(1)
 
@@ -37,7 +38,7 @@ def shuffle_one_student(student_priorities):
 def make_lottery(students, hospitals, num_of_iter):
     order = assignments.get_hospitals_order(hospitals)
     probs = assignments.expected_hat(students, hospitals, order, num_of_iter)
-    problem = lpsolver.Problem(probs, order, students)
+    problem = lpsolver.AssignmentProblem(probs, order, students)
     new_probs = problem.solve()
     return new_probs, order
 
@@ -336,7 +337,7 @@ def simulation_flips_changes(num_of_flips, students, hospitals, sim_number):
         with open('results/improvement_happiness' + str(sim_number) + '.csv', 'a', newline='') as resultFile:
             csv_out = csv.writer(resultFile)
             if num_of_flips == 0:
-                csv_out.writerow(['priorities','real_happiness','after_strategy_happiness','strategy_id','num_of_flips'])
+                csv_out.writerow(['priorities', 'real_happiness', 'after_strategy_happiness','strategy_id','num_of_flips'])
             for tup in improvement_happiness:
                 csv_out.writerow(tup)
         tuple_improve.append((num_of_flips, len(improvement_happiness)))

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import data
 
@@ -76,7 +77,7 @@ def count_hospitals_choices(real_priority_list):
     return d_name_to_list, legal_counter_votes
 
 
-def real_priority_hist(students):
+def real_priority_hist(students, type):
     # get a list of the real priorities
     real_priority_list = get_attribute_list(students, "real")
     d_name_to_priority = dict()
@@ -86,10 +87,10 @@ def real_priority_hist(students):
     # priority_counter - each hospital has a list of votes
     priority_counter, counter_legal_votes = count_hospitals_choices(real_priority_list)
     popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority,
-                           "Hospital rating by students real priority")
+                           "Hospital rating by students real priority - " + type + " happiness", type)
 
 
-def reported_priority_hist(students):
+def reported_priority_hist(students, type):
     # get a list of the real priorities
     real_priority_list = get_attribute_list(students, "reported")
     d_name_to_priority = dict()
@@ -99,24 +100,37 @@ def reported_priority_hist(students):
     # priority_counter - each hospital has a list of votes
     priority_counter, counter_legal_votes = count_hospitals_choices(real_priority_list)
     popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority,
-                           "Hospital rating by students reported priority")
+                           "Hospital rating by students reported priority - " + type + " happiness", type)
 
 
-def ministry_of_health_data():
+def ministry_of_health_data(type):
     priority_dict, num_of_students = data.get_votes()
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in list(priority_dict.keys()):
         d_name_to_priority[hos_name] = np.zeros(len(priority_dict.keys()))
     popular_hospitals_stat(priority_dict, num_of_students, d_name_to_priority,
-                           "Hospital priority - Ministry Of Health data")
+                           "Hospital priority - Ministry Of Health data - " + type + " happiness", type)
 
 
-def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority, title):
-    num = len(priority_counter)
-    coefficient_vector = np.zeros(num)
-    for i in range(len(priority_counter)):
-        coefficient_vector[i] = (num - i)**2
+def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority, title,
+                           happiness_type="quadratic"):
+    list_size = len(priority_counter)
+    coefficient_vector = np.zeros(list_size)
+    if happiness_type == 'quadratic':
+        for i in range(list_size):
+            coefficient_vector[i] = (list_size - i)**2
+    elif happiness_type == 'linear':
+        for i in range(list_size):
+            coefficient_vector[i] = list_size - i
+    elif happiness_type == 'median':
+        middle = list_size // 2
+        for i in range(list_size):
+            if i <= middle:
+                coefficient_vector[i] = (list_size - i - middle)**2
+            else:
+                coefficient_vector[i] = -((list_size - i - middle)**2)
+        coefficient_vector += abs(min(coefficient_vector))
     for name, priority in priority_counter.items():
         d_name_to_priority[name] = np.dot(coefficient_vector, priority)
     ax = plt.subplot(111)
@@ -124,7 +138,10 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
     li = list(d_name_to_priority.items())
     li = sorted(li, key=lambda x: x[1])
     x = [e[0] for e in li]
-    y = [e[1]/10000 for e in li]
+    if happiness_type == 'linear':
+        y = [e[1]/1000 for e in li]
+    else:
+        y = [e[1]/10000 for e in li]
     plt.bar(x, y,  align='center')
     plt.gca().set_xticks(list(d_name_to_priority.keys()))
 
@@ -132,7 +149,10 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
     for name in d_name_to_priority.keys():
         name_reverse.append(name[::-1])
     ax.set_xticklabels(name_reverse, rotation=90, rotation_mode="anchor", ha="right")
-    ax.set_ylabel("Hospital priority (x10^5)")
+    if happiness_type == 'linear':
+        ax.set_ylabel("Hospital priority (x10^4)")
+    else:
+        ax.set_ylabel("Hospital priority (x10^5)")
     plt.xlabel("students votes: " + str(counter_legal_votes))
     plt.show()
 
@@ -145,8 +165,12 @@ def pair_stat(students):
 
 def get_attribute_list(students, attribute):
     attribute_list = []
-    for student in students:
-        attribute_list.append(getattr(student, attribute))
+    if attribute == "result":
+        for student in students:
+            attribute_list.append(student.assignment)
+    else:
+        for student in students:
+            attribute_list.append(getattr(student, attribute))
     return attribute_list
 
 
@@ -210,8 +234,8 @@ def gender_stat(students):
 # count how many students got one of their top 5 real priorities
 # (return the counter and their indexes)
 def got_result_from_range():
-    real_priority_list = get_attribute_list(students, "_reported")
-    result_list = get_attribute_list(students, "_result")
+    real_priority_list = get_attribute_list(students, "real")
+    result_list = get_attribute_list(students, "result")
     i = 0
     top5_counter = 0
     five_ten_counter = 0
@@ -226,21 +250,21 @@ def got_result_from_range():
             fif_twenty = student_list[15:20]
             last5 = student_list[20:25]
             if not pd.isnull(result_list[i]):
-                if hospital_codes[int(result_list[i])] in top5:
+                if result_list[i] in top5:
                     top5_counter += 1
-                if hospital_codes[int(result_list[i])] in five_ten:
+                if result_list[i] in five_ten:
                     five_ten_counter += 1
-                if hospital_codes[int(result_list[i])] in ten_fif:
+                if result_list[i] in ten_fif:
                     ten_fif_counter += 1
-                if hospital_codes[int(result_list[i])] in fif_twenty:
+                if result_list[i] in fif_twenty:
                     fif_twenty_counter += 1
-                if hospital_codes[int(result_list[i])] in last5:
+                if result_list[i] in last5:
                     last5_counter += 1
         i += 1
     num_of_participants = top5_counter+five_ten_counter+ten_fif_counter+fif_twenty_counter+last5_counter
     draw_hist2(students, [top5_counter, five_ten_counter, ten_fif_counter, fif_twenty_counter, last5_counter],
                ['1-5', '6-10', '11-15', '16-20', '21-25'],
-               "Placement of the final results according to the students' reported choice ", 0.9, 2.0,
+               "Placement of the final results according to the students' real choice ", 0.9, 2.0,
                "Final placement range \n participants:" + str(num_of_participants),
                "number Of students", 0)
 
@@ -250,19 +274,31 @@ if __name__ == "__main__":
     students = data.get_all_students(hospital_codes, result_codes)
 
     # statistics
-    #gender_stat(students)
-    #all_reasons_stat(students)
-    #age_stat(students)
-    #university_stat(students)
-    #is_hat_better_stat(students)
-    #understanding_stat(students)
-    #pair_stat(students)
-    #popular_hospitals_stat(students)
-    # real_priority_hist(students)
-    #reported_priority_hist(students)
-    #single_real_hospital_votes()
-    #single_reported_hospital_votes()
-    #single_ministry_of_health_data()
-    #ministry_of_health_data()
-    got_result_from_range()
+    # gender_stat(students)
+    # all_reasons_stat(students)
+    # age_stat(students)
+    # university_stat(students)
+    # is_hat_better_stat(students)
+    # understanding_stat(students)
+    # pair_stat(students)
+    # popular_hospitals_stat(students)
+
+    # real_priority_hist(students, 'quadratic')
+    # real_priority_hist(students, 'linear')
+    # real_priority_hist(students, 'median')
+
+    # reported_priority_hist(students, 'quadratic')
+    # reported_priority_hist(students, 'linear')
+    # reported_priority_hist(students, 'median')
+
+    # single_real_hospital_votes()
+    # single_reported_hospital_votes()
+
+    # single_ministry_of_health_data()
+
+    # ministry_of_health_data('quadratic')
+    # ministry_of_health_data('linear')
+    # ministry_of_health_data('median')
+
+    # got_result_from_range()
 
