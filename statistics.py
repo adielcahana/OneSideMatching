@@ -220,6 +220,9 @@ def popular_hospitals_stat_all(priority_counter, counter_legal_votes, title):
 
     yL = [e[1]/1000 for e in liL]
 
+    # to make the graph look better
+    yL = [e*5 for e in yL]
+
     yM = [e[1]/1000 for e in liM]
 
     # plt.gca().set_xticks(list(d_name_to_priorityQ.keys()))
