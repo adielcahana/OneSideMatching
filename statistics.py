@@ -1,8 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 import data
+
+
+def swap(list_to_swap, index_a, index_b):
+    list_to_swap[index_b], list_to_swap[index_a] = list_to_swap[index_a], list_to_swap[index_b]
 
 
 def single_real_hospital_votes():
@@ -141,7 +144,7 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
     if happiness_type == 'linear':
         y = [e[1]/1000 for e in li]
     else:
-        y = [e[1]/10000 for e in li]
+        y = [e[1]/1000 for e in li]
     plt.bar(x, y,  align='center')
     plt.gca().set_xticks(list(d_name_to_priority.keys()))
 
@@ -154,6 +157,85 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
     else:
         ax.set_ylabel("Hospital priority (x10^5)")
     plt.xlabel("students votes: " + str(counter_legal_votes))
+    plt.show()
+
+
+def ministry_of_health_data_all():
+    priority_dict, num_of_students = data.get_votes()
+    d_name_to_priority = dict()
+    # initialize dictionary to key=name and value=priority list
+    for hos_name in list(priority_dict.keys()):
+        d_name_to_priority[hos_name] = np.zeros(len(priority_dict.keys()))
+    popular_hospitals_stat_all(priority_dict, num_of_students,
+                               "Hospital priority - Ministry Of Health data - happiness results")
+
+
+def popular_hospitals_stat_all(priority_counter, counter_legal_votes, title):
+    # signs: Q = quadratic, L = linear, M = median
+
+    list_size = len(priority_counter)
+    d_name_to_priorityQ = dict()
+    d_name_to_priorityL = dict()
+    d_name_to_priorityM = dict()
+    coefficient_vectorQ = np.zeros(list_size)
+    coefficient_vectorL = np.zeros(list_size)
+    coefficient_vectorM = np.zeros(list_size)
+
+    middle = list_size // 2
+    for i in range(list_size):
+        coefficient_vectorQ[i] = (list_size - i)**2
+        coefficient_vectorL[i] = list_size - i
+        if i <= middle:
+            coefficient_vectorM[i] = (list_size - i - middle)**2
+        else:
+            coefficient_vectorM[i] = -((list_size - i - middle)**2)
+        coefficient_vectorM += abs(min(coefficient_vectorM))
+    for name, priority in priority_counter.items():
+        d_name_to_priorityQ[name] = np.dot(coefficient_vectorQ, priority)
+        d_name_to_priorityL[name] = np.dot(coefficient_vectorL, priority)
+        d_name_to_priorityM[name] = np.dot(coefficient_vectorM, priority)
+
+    ax = plt.subplot(111)
+    plt.title(title)
+    liQ = list(d_name_to_priorityQ.items())
+    liQ = sorted(liQ, key=lambda x: x[1])
+
+    liL = list(d_name_to_priorityL.items())
+    liL = sorted(liL, key=lambda x: x[1])
+
+    liM = list(d_name_to_priorityM.items())
+    liM = sorted(liM, key=lambda x: x[1])
+
+    # To be in an equal arrangement - we make swaps of items in liM and liL according to the sort of liQ.
+    swap(liL, 3, 4)
+    swap(liM, 2, 3)
+    swap(liM, 3, 4)
+    swap(liM, 11, 12)
+    swap(liM, 13, 14)
+    swap(liM, 14, 15)
+    swap(liM, 15, 16)
+
+    xQ = [e[0] for e in liQ]
+    yQ = [e[1]/1000 for e in liQ]
+
+    yL = [e[1]/1000 for e in liL]
+
+    yM = [e[1]/1000 for e in liM]
+
+    # plt.gca().set_xticks(list(d_name_to_priorityQ.keys()))
+
+    name_reverse = []
+    for name in xQ:
+        name_reverse.append(name[::-1])
+    ax.set_xticklabels(name_reverse, rotation=90, rotation_mode="anchor", ha="right")
+    ax.set_ylabel("Hospital priority (x10^4)")
+    plt.xlabel("students votes: " + str(counter_legal_votes))
+
+    plt.plot(name_reverse, yQ)
+    plt.plot(name_reverse, yL)
+    plt.plot(name_reverse, yM)
+
+    plt.legend(['y = Quadratic', 'y = Linear', 'y = Median'], loc='upper left')
     plt.show()
 
 
@@ -295,6 +377,9 @@ if __name__ == "__main__":
     # single_reported_hospital_votes()
 
     # single_ministry_of_health_data()
+
+    # the data of the health ministry - with 3 different happiness functions in one graph.
+    ministry_of_health_data_all()
 
     # ministry_of_health_data('quadratic')
     # ministry_of_health_data('linear')
