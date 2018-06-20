@@ -84,7 +84,7 @@ def median_happiness_coeff(hospitals_order, students):
     median = int(m/2)
     for i, student in enumerate(students):
         for j, priority in enumerate(student.priorities):
-            if j < median:
+            if j <= median:
                 coeff[i][hospitals_order[priority]] = (m - j - median) ** 2
             if j > median:
                 coeff[i][hospitals_order[priority]] = -((m - j - median) ** 2)

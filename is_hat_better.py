@@ -9,7 +9,7 @@ import data
 import lpsolver
 
 np.random.seed(int(time.time()))
-num_of_simulations = 10
+num_of_simulations = 100
 hospitals = data.Hospitals.from_csv("D:\Documents\לימודים\שנה ד\OneSideMatching\\res\seats_2018.csv")
 order = assignments.get_hospitals_order(hospitals)
 
@@ -57,8 +57,11 @@ happiness_reported_alg = np.zeros((num_of_simulations, len(students)))
 happiness_onereal_alg = np.zeros((num_of_simulations, len(students)))
 happiness_onereal_expected = np.zeros((num_of_simulations, len(students)))
 
-coeff = lpsolver.get_happiness_coeff(order, students, 'quadratic')
+
+happiness_type = 'quadratic'
+coeff = lpsolver.get_happiness_coeff(order, students, happiness_type)
 for simulation in range(num_of_simulations):
+    print("simulation num: " + str(simulation))
     # revert the random students to say the reported priorites
     for student in students:
         student.priorities = student.real
@@ -68,7 +71,7 @@ for simulation in range(num_of_simulations):
         happiness_real_expcted[simulation][i] += np.dot(np.asarray(coeff[i]), probs[i])
 
     # happiness with real priorities and our algorithm
-    problem = lpsolver.AssignmentProblem(probs, order, students, 'quadratic')
+    problem = lpsolver.AssignmentProblem(probs, order, students, happiness_type)
     new_probs = problem.solve()
     for i in range(len(students)):
         happiness_real_alg[simulation][i] += np.dot(np.asarray(coeff[i]), new_probs[i])
@@ -82,32 +85,34 @@ for simulation in range(num_of_simulations):
         happiness_reporteded_expcted[simulation][i] += np.dot(np.asarray(coeff[i]), probs[i])
 
     # happiness with reported priorities and our algorithm
-    problem = lpsolver.AssignmentProblem(probs, order, students, 'quadratic')
+    problem = lpsolver.AssignmentProblem(probs, order, students, happiness_type)
     new_probs = problem.solve()
     for i in range(len(students)):
         happiness_reported_alg[simulation][i] += np.dot(np.asarray(coeff[i]), new_probs[i])
 
-    #one lie simulation
+    #one real simulation
     for idx, student in enumerate(students):
         student.priorities = student.real
 
         probs = assignments.expected_hat(students, hospitals, order, 1000)
         happiness_onereal_expected[simulation][idx] = np.dot(np.asarray(coeff[idx]), probs[idx])
 
-        problem = lpsolver.AssignmentProblem(probs, order, students, 'quadratic')
+        problem = lpsolver.AssignmentProblem(probs, order, students, "median")
         new_probs = problem.solve()
         happiness_onereal_alg[simulation][idx] = np.dot(np.asarray(coeff[idx]), new_probs[idx])
 
         student.priorities = student.reported
 
+# save all of the results as csv
+dir_name = "graphs/is hat better/diffrent lp/median lp with quadratic analasys"
+np.savetxt(dir_name + "/reaported_lp.csv", happiness_reported_alg, delimiter=",")
+np.savetxt(dir_name + "/reaported_hat.csv", happiness_reporteded_expcted, delimiter=",")
+np.savetxt(dir_name + "/real_hat.csv", happiness_real_expcted, delimiter=",")
+np.savetxt(dir_name + "/real_lp.csv", happiness_real_alg, delimiter=",")
+np.savetxt(dir_name + "/one_real_hat.csv", happiness_onereal_expected, delimiter=",")
+np.savetxt(dir_name + "/one_real_lp.csv", happiness_onereal_alg, delimiter=",")
 
-np.savetxt("res/is hat better/quadratic/reaported_lp.csv", happiness_reported_alg, delimiter=",")
-np.savetxt("res/is hat better/quadratic/reaported_hat.csv", happiness_reporteded_expcted, delimiter=",")
-np.savetxt("res/is hat better/quadratic/real_hat.csv", happiness_real_expcted, delimiter=",")
-np.savetxt("res/is hat better/quadratic/real_lp.csv", happiness_real_alg, delimiter=",")
-np.savetxt("res/is hat better/quadratic/onelie_hat.csv", happiness_onereal_expected, delimiter=",")
-np.savetxt("res/is hat better/quadratic/onelie_lp.csv", happiness_onereal_alg, delimiter=",")
-
+# create a graph of all the results in matplotlib
 students_x = np.arange(0, len(students))
 p1 = plt.errorbar(students_x, np.average(happiness_real_expcted, axis=0), yerr=np.std(happiness_real_expcted, axis=0))
 p2 = plt.errorbar(students_x, np.average(happiness_real_alg, axis=0), yerr=np.std(happiness_real_alg, axis=0))
