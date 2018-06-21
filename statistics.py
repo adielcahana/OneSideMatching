@@ -4,27 +4,94 @@ import pandas as pd
 import data
 
 
+# basic stat
+def understanding_stat(students):
+    understands = get_attribute_list(students, "understanding")
+    answers = ["understand", "Understand in general", "Understand basics", "Do not understand", "unreported"]
+    draw_hist(understands, answers, "Understand the System", -0.1, 0.7, "", "number Of students", 10)
+
+
+# basic stat
+def is_hat_better_stat(students):
+    hat = get_attribute_list(students, "is_hat_better")
+    answers = ["Yes", "Dont Know", "No", "unreported"]
+    draw_hist(hat, answers, "Hat Better?", -0.1, 0.7, "", "number Of students", 10)
+
+
+# basic stat
+def university_stat(students):
+    universities = get_attribute_list(students, "university")
+    answers = ["Tel-Aviv", "Ben-Gurion", "Technion", "Hebrew", "Bar-Ilan"]
+    draw_hist(universities, answers, "University", 0.85, 0.7, "university-name", "number Of students", 10)
+
+
+# basic stat
+def age_stat(students):
+    ages = get_attribute_list(students, "age")
+    ages.remove(1)
+    ax = plt.subplot(111)
+    plt.title("Age")
+    labels, counts = np.unique(ages, return_counts=True)
+    plt.bar(labels, counts,  align='center')
+    plt.gca().set_xticks(labels)
+    for i, v in enumerate(counts):
+        if i == (len(counts)-1):
+            i += 1
+        ax.text(i + 22.7, v + 0.7, str(v), color='blue', fontweight='bold')
+    ax.set_xlabel('student age')
+    ax.set_ylabel('number Of students')
+    plt.show()
+
+
+# basic stat
+def all_reasons_stat(students):
+    all_reason = get_all_reasons(students)
+    answers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    draw_hist(all_reason, answers, "Reason", 0.9, 2.0, "answer id", "number Of students", 0)
+
+
+# basic stat
+def get_all_reasons(students):
+    all_reasons_list = []
+    for student in students:
+        if student.all_reasons is not None:
+            all_reasons_list += student.all_reasons
+    return all_reasons_list
+
+
+# basic stat
+def gender_stat(students):
+    gender_list = get_attribute_list(students, "gender")
+    answers = ['male', "female", "unreported"]
+    draw_hist(gender_list, answers, "Gender", 0.9, 2.5, "", "number Of students", 0)
+
+
+# swap 2 items in current list
 def swap(list_to_swap, index_a, index_b):
     list_to_swap[index_b], list_to_swap[index_a] = list_to_swap[index_a], list_to_swap[index_b]
 
 
+# get real hospital votes - for each hospital separate
 def single_real_hospital_votes():
     real_priority_list = get_attribute_list(students, "real")
     votes_result = count_hospitals_choices(real_priority_list)
     single_hospital_votes(votes_result, "real votes.png", "real")
 
 
+# get reported hospital votes - for each hospital separate
 def single_reported_hospital_votes():
     real_priority_list = get_attribute_list(students, "reported")
     votes_result = count_hospitals_choices(real_priority_list)
     single_hospital_votes(votes_result, "reported votes.png", "reported")
 
 
+# get hospital votes - for each hospital separate (ministry data)
 def single_ministry_of_health_data():
     votes_result = data.get_votes()
     single_hospital_votes(votes_result, "ministry data votes.png", "Ministry Of Health")
 
 
+# plot the results of hospital votes - for each hospital
 def single_hospital_votes(votes_result, file_name, title):
     for hospital, vote in votes_result[0].items():
         fig = plt.figure()
@@ -36,11 +103,12 @@ def single_hospital_votes(votes_result, file_name, title):
         plt.gca().set_yticks(list(range(0, 450, 20)))
         ax.set_xlabel("priority")
         ax.set_ylabel("number of votes")
-        #plt.show()
+        # plt.show()
         plt.savefig("plots/" + hospital + file_name)
         plt.close(fig)
 
 
+# Generic draw hist
 def draw_hist(list, label_names, title, x, y, x_name, y_name, rotate):
     ax = plt.subplot(111)
     plt.title(title)
@@ -55,17 +123,18 @@ def draw_hist(list, label_names, title, x, y, x_name, y_name, rotate):
     plt.show()
 
 
+# Generic2 draw hist
 def draw_hist2(students, list, label_names, title, x, y, x_name, y_name, rotate):
     ax = plt.subplot(111)
     plt.title(title)
     plt.bar(label_names, list,  align='center')
     plt.gca().set_xticks(label_names)
-
     ax.set_xlabel(x_name)
     ax.set_ylabel(y_name)
     plt.show()
 
 
+# to get the votes results - count the times hospital was chosen at X position
 def count_hospitals_choices(real_priority_list):
     d_name_to_list = dict()
     legal_counter_votes = 0
@@ -77,9 +146,11 @@ def count_hospitals_choices(real_priority_list):
         legal_counter_votes += 1
         for index_name in range(len(ls)):
             d_name_to_list[ls[index_name]][index_name] += 1
+    # return tne num of votes and the list of each hospital(dictionary)
     return d_name_to_list, legal_counter_votes
 
 
+# real rating - according to the type of the happiness func(linear, quadratic, median)
 def real_priority_hist(students, type):
     # get a list of the real priorities
     real_priority_list = get_attribute_list(students, "real")
@@ -89,10 +160,12 @@ def real_priority_hist(students, type):
         d_name_to_priority[hos_name] = np.zeros(len(real_priority_list[0]))
     # priority_counter - each hospital has a list of votes
     priority_counter, counter_legal_votes = count_hospitals_choices(real_priority_list)
+    # plot results
     popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority,
                            "Hospital rating by students real priority - " + type + " happiness", type)
 
 
+# reported rating - according to the type of the happiness func(linear, quadratic, median)
 def reported_priority_hist(students, type):
     # get a list of the real priorities
     real_priority_list = get_attribute_list(students, "reported")
@@ -102,20 +175,24 @@ def reported_priority_hist(students, type):
         d_name_to_priority[hos_name] = np.zeros(len(real_priority_list[0]))
     # priority_counter - each hospital has a list of votes
     priority_counter, counter_legal_votes = count_hospitals_choices(real_priority_list)
+    # plot results
     popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority,
                            "Hospital rating by students reported priority - " + type + " happiness", type)
 
 
+#  ministry of health rating - according to the type of the happiness func(linear, quadratic, median)
 def ministry_of_health_data(type):
     priority_dict, num_of_students = data.get_votes()
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in list(priority_dict.keys()):
         d_name_to_priority[hos_name] = np.zeros(len(priority_dict.keys()))
+        # plot results
     popular_hospitals_stat(priority_dict, num_of_students, d_name_to_priority,
                            "Hospital priority - Ministry Of Health data - " + type + " happiness", type)
 
 
+# plot according to the type of the happiness func
 def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_priority, title,
                            happiness_type="quadratic"):
     list_size = len(priority_counter)
@@ -141,10 +218,12 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
     li = list(d_name_to_priority.items())
     li = sorted(li, key=lambda x: x[1])
     x = [e[0] for e in li]
+    # normalization
     if happiness_type == 'linear':
         y = [e[1]/1000 for e in li]
     else:
         y = [e[1]/1000 for e in li]
+
     plt.bar(x, y,  align='center')
     plt.gca().set_xticks(list(d_name_to_priority.keys()))
 
@@ -160,19 +239,21 @@ def popular_hospitals_stat(priority_counter, counter_legal_votes, d_name_to_prio
     plt.show()
 
 
+# the data of the health ministry - with 3 different happiness functions in one graph.
 def ministry_of_health_data_all():
     priority_dict, num_of_students = data.get_votes()
     d_name_to_priority = dict()
     # initialize dictionary to key=name and value=priority list
     for hos_name in list(priority_dict.keys()):
         d_name_to_priority[hos_name] = np.zeros(len(priority_dict.keys()))
+    # plot results
     popular_hospitals_stat_all(priority_dict, num_of_students,
                                "Hospital priority - Ministry Of Health data - happiness results")
 
 
+# plot 3 different happiness functions in one graph
 def popular_hospitals_stat_all(priority_counter, counter_legal_votes, title):
     # signs: Q = quadratic, L = linear, M = median
-
     list_size = len(priority_counter)
     d_name_to_priorityQ = dict()
     d_name_to_priorityL = dict()
@@ -206,7 +287,8 @@ def popular_hospitals_stat_all(priority_counter, counter_legal_votes, title):
     liM = list(d_name_to_priorityM.items())
     liM = sorted(liM, key=lambda x: x[1])
 
-    # To be in an equal arrangement - we make swaps of items in liM and liL according to the sort of liQ.
+    # To be with equal arrangement -
+    # we make swaps of items in liM and liL according to the sort of liQ results.
     swap(liL, 3, 4)
     swap(liM, 2, 3)
     swap(liM, 3, 4)
@@ -217,15 +299,11 @@ def popular_hospitals_stat_all(priority_counter, counter_legal_votes, title):
 
     xQ = [e[0] for e in liQ]
     yQ = [e[1]/1000 for e in liQ]
-
     yL = [e[1]/1000 for e in liL]
 
     # to make the graph look better
     yL = [e*5 for e in yL]
-
     yM = [e[1]/1000 for e in liM]
-
-    # plt.gca().set_xticks(list(d_name_to_priorityQ.keys()))
 
     name_reverse = []
     for name in xQ:
@@ -242,12 +320,14 @@ def popular_hospitals_stat_all(priority_counter, counter_legal_votes, title):
     plt.show()
 
 
+# basic plot
 def pair_stat(students):
     pairs = get_attribute_list(students, "pair")
     answers = ["Yes", "No", "unreported"]
     draw_hist(pairs, answers, "Pair ?", -0.1, 0.7, "", "number Of students", 10)
 
 
+# get desirable attribute from each student
 def get_attribute_list(students, attribute):
     attribute_list = []
     if attribute == "result":
@@ -257,63 +337,6 @@ def get_attribute_list(students, attribute):
         for student in students:
             attribute_list.append(getattr(student, attribute))
     return attribute_list
-
-
-def understanding_stat(students):
-    understands = get_attribute_list(students, "understanding")
-    answers = ["understand", "Understand in general", "Understand basics", "Do not understand", "unreported"]
-    draw_hist(understands, answers, "Understand the System", -0.1, 0.7, "", "number Of students", 10)
-
-
-def is_hat_better_stat(students):
-    hat = get_attribute_list(students, "is_hat_better")
-    answers = ["Yes", "Dont Know", "No", "unreported"]
-    draw_hist(hat, answers, "Hat Better?", -0.1, 0.7, "", "number Of students", 10)
-
-
-def university_stat(students):
-    universities = get_attribute_list(students, "university")
-    answers = ["Tel-Aviv", "Ben-Gurion", "Technion", "Hebrew", "Bar-Ilan"]
-    draw_hist(universities, answers, "University", 0.85, 0.7, "university-name", "number Of students", 10)
-
-
-def age_stat(students):
-    ages = get_attribute_list(students, "age")
-    ages.remove(1)
-    ax = plt.subplot(111)
-    plt.title("Age")
-    labels, counts = np.unique(ages, return_counts=True)
-    plt.bar(labels, counts,  align='center')
-    plt.gca().set_xticks(labels)
-    for i, v in enumerate(counts):
-        if i == (len(counts)-1):
-            i += 1
-        ax.text(i + 22.7, v + 0.7, str(v), color='blue', fontweight='bold')
-    ax.set_xlabel('student age')
-    ax.set_ylabel('number Of students')
-    plt.show()
-
-
-# all reasons hist
-def all_reasons_stat(students):
-    all_reason = get_all_reasons(students)
-    answers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    draw_hist(all_reason, answers, "Reason", 0.9, 2.0, "answer id", "number Of students", 0)
-
-
-def get_all_reasons(students):
-    all_reasons_list = []
-    for student in students:
-        if student.all_reasons is not None:
-            all_reasons_list += student.all_reasons
-    return all_reasons_list
-
-
-# gender hist
-def gender_stat(students):
-    gender_list = get_attribute_list(students, "gender")
-    answers = ['male', "female", "unreported"]
-    draw_hist(gender_list, answers, "Gender", 0.9, 2.5, "", "number Of students", 0)
 
 
 # count how many students got one of their top 5 real priorities
@@ -354,11 +377,13 @@ def got_result_from_range():
                "number Of students", 0)
 
 if __name__ == "__main__":
+    # get data
     hospital_codes = data.get_codes("res/hospitals codes.txt")
     result_codes = data.get_codes("res/results codes.txt")
     students = data.get_all_students(hospital_codes, result_codes)
 
-    # statistics
+    # statistics functions : to activate just uncomment the desirable line ->
+
     # gender_stat(students)
     # all_reasons_stat(students)
     # age_stat(students)
@@ -378,10 +403,11 @@ if __name__ == "__main__":
 
     # single_real_hospital_votes()
     # single_reported_hospital_votes()
-
     # single_ministry_of_health_data()
 
     # the data of the health ministry - with 3 different happiness functions in one graph.
+
+    # -> current active func <-
     ministry_of_health_data_all()
 
     # ministry_of_health_data('quadratic')
