@@ -74,6 +74,7 @@ def fill_strategy(priorities_queue, strategy):
             pass
 
 
+# strategy 1: one place up - from top 5 hospitals if you can take each of them one place up
 def strategy1(priorities, strategy, top5, hospital_value):
     indices = [priorities.index(x) for x in top5]
     indices.sort()
@@ -91,6 +92,7 @@ def strategy1(priorities, strategy, top5, hospital_value):
     return strategy
 
 
+# strategy 2: one place down - from last 5 hospitals if you can take each of them one place down
 def strategy2(priorities, strategy, last5, hospital_value):
     indices = [priorities.index(x) for x in last5]
     indices.sort(reverse=True)
@@ -107,6 +109,7 @@ def strategy2(priorities, strategy, last5, hospital_value):
     return strategy
 
 
+# strategy 3: two place up - from top 3 hospitals if you can take each of them 2 place up
 def strategy3(priorities, strategy, top3, hospital_value):
     indices = [priorities.index(x) for x in top3]
     indices.sort()
@@ -126,6 +129,7 @@ def strategy3(priorities, strategy, top3, hospital_value):
     return strategy
 
 
+# strategy 4 : two place down - from last 3 hospitals if you can take each of them 2 place down
 def strategy4(priorities, strategy, last3, hospital_value):
     indices = [priorities.index(x) for x in last3]
     indices.sort(reverse=True)
@@ -144,6 +148,7 @@ def strategy4(priorities, strategy, last3, hospital_value):
     return strategy
 
 
+# strategy 5: from top3 hospitals - take each one up place, last3 - one down
 def strategy5(priorities, strategy, last3, top3, hospital_value):
     indices_top = [priorities.index(x) for x in top3]
     indices_top.sort()
@@ -174,6 +179,7 @@ def strategy5(priorities, strategy, last3, top3, hospital_value):
     return strategy
 
 
+# strategy 6 : positions of 15-19 - if you can take each one place up
 def strategy6(priorities, strategy, five_better_last5, hospital_value):
     indices = [priorities.index(x) for x in five_better_last5]
     indices.sort(reverse=True)
@@ -189,15 +195,16 @@ def strategy6(priorities, strategy, five_better_last5, hospital_value):
     return strategy
 
 
+# strategy 7: same priorities as hospital values
 # def strategy7(priorities, strategy, hospital_value):
 #     return hospital_value
 
-
+# strategy 8: move item rated 20(according to hospital value) to position 5 of priorities()
 # def strategy8(priorities, strategy, rate_20, hospital_value):
 #     strategy[4] = rate_20
 #     return strategy
 
-
+# strategy 9: positions of top5 - move one place down
 def strategy9(priorities, strategy, top5):
     indices = [priorities.index(x) for x in top5]
     indices.sort(reverse=True)
@@ -213,6 +220,7 @@ def strategy9(priorities, strategy, top5):
     return strategy
 
 
+# strategy 10: positions of last5 - move one place up
 def strategy10(priorities, strategy, last5):
     indices = [priorities.index(x) for x in last5]
     indices.sort()
@@ -329,7 +337,6 @@ def simulation_flips_changes(num_of_flips, students, hospitals, sim_number):
         # multiple from the result from solve (dot) lottery_probs
         result_happiness_after = np.dot(happiness[0], lottery_probs[0])
         print("after:", result_happiness_after)
-        #TODO add range of mistake (like 5.0) result_happiness_after - 5.0 > result_happiness
         if result_happiness_after > result_happiness:
             improvement_happiness.append((students[0].priorities, result_happiness, result_happiness_after, i, num_of_flips))
     # if improvement_happiness not empty print the details
