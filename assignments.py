@@ -38,6 +38,14 @@ def expected_hat(students, hospitals, order, iterate_num):
 
 
 def birkhoff_normalize(probs_matrix, hospitals, order):
+    """
+    create NxN bi-stochastic matrix from the probabilities,
+    where each row is a student and each column is a seat in a specific hospital
+    :param probs_matrix: NxM matrix of probabilties for each student to get a seat in a hospital
+    :param hospitals: Hospitals class, mapping between hospital to number of seats
+    :param order: hospital ordering over the columns
+    :return:
+    """
     # create mapping from column index to hospital name
     rev_order = {v: k for k, v in order.items()}
     # initialize
