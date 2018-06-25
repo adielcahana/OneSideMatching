@@ -45,6 +45,7 @@ class Hospitals:
     """
     def __init__(self):
         self.seats = dict()
+        self._values = dict()
 
     def __setitem__(self, key, value):
         self.seats[key] = value
@@ -57,6 +58,33 @@ class Hospitals:
 
     def __len__(self):
         return len(self.seats)
+
+    def update_value(self, hospitals_value):
+        '''
+        update the hospital values according to one hat lottery
+        :param hospitals_value: list of hospital names,
+        where each index represents the exit order of the hospital in this index
+        :return:
+        '''
+        for i, name in enumerate(hospitals_value):
+            if name in self._values:
+                self._values[name] += i
+            else:
+                self._values[name] = i
+
+    @property
+    def values(self):
+        """
+        the exit order of each hospital from expected hat
+        :return:
+        """
+        values = sorted(self._values.items(), key=lambda x: x[1])
+        return [hospital[0] for hospital in values]
+
+    @property
+    def names(self):
+        return list(self.seats.keys())
+    # read data from excel file (hospital list)
 
     @staticmethod
     def from_excel(path):
@@ -87,10 +115,6 @@ class Hospitals:
         for key, value in hospitals:
             new_hospitals[key] = value
         return new_hospitals
-
-    @property
-    def names(self):
-        return list(self.seats.keys())
 
 
 def get_student(id, row, hospital_codes, results_codes):

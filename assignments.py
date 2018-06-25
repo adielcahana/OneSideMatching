@@ -20,12 +20,18 @@ def hat(students, hospitals, order):
     seats = Hospitals.copy(hospitals)
     assignments = np.zeros((len(students), len(hospitals)), dtype=np.float64)
 
+    values = []
+
     for i in range(len(students)):
         for choice in students[indexes[i]].priorities:
             if seats[choice] > 0:
                 assignments[indexes[i]][order[choice]] = 1.0
                 seats[choice] -= 1
+                if seats[choice] == 0:
+                    values.append(choice)
                 break
+
+    hospitals.update_value(values)
 
     return assignments
 
